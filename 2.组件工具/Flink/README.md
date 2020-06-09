@@ -1,5 +1,22 @@
 # Flink
 
+## 应用场景
+
+### 事件驱动型应用
+
+> 一类具有状态的应用，它从一个或多个事件流提取数据，并根据到来的事件触发计算、状态更新或其他外部动作。
+![事件驱动型应用](./assets/usecases-eventdrivenapps.png)
+
+### 数据分析型应用
+
+> 数据分析任务需要从原始数据中提取有价值的信息和指标
+![数据分析型应用](./assets/usecases-analytics.png)
+
+### 数据管道应用
+
+> 提取-转换-加载（ETL）是一种在存储系统之间进行数据转换和迁移的常用方法。数据管道是以持续流模式运行，而非周期性触发。
+![数据管道应用](./assets/usecases-datapipelines.png)
+
 ## Flink 名词汇总
 
 ### Flink Application Cluster
@@ -85,3 +102,17 @@ Record 是数据集或数据流的组成元素。Operator 和 Function接收 rec
 ### Transformation
 
 > Transformation 应用于一个或多个数据流或数据集，并产生一个或多个输出数据流或数据集。Transformation 可能会在每个记录的基础上更改数据流或数据集，但也可以只更改其分区或执行聚合。虽然 Operator 和 Function 是 Flink API 的“物理”部分，但 Transformation 只是一个 API 概念。具体来说，大多数（但不是全部）Transformation 是由某些 Operator 实现的。
+
+## JobManager 的数据结构
+
+### JobGraph & ExecutionGraph
+
+![job_and_execution_graph](./assets/job_and_execution_graph.svg)
+
+#### Job Status
+
+![job_status](./assets/job_status.svg)
+
+#### Execution Status
+
+![state_machine](./assets/state_machine.svg)
