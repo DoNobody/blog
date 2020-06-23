@@ -137,3 +137,10 @@ pipeline {
     }
 }
 ```
+
+## Jenkins shell 后台运行防终止
+
+```bash
+# 命令行前添加环境变量
+BUILD_ID=DONTKILLME
+```
