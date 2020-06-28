@@ -116,3 +116,49 @@ Record 是数据集或数据流的组成元素。Operator 和 Function接收 rec
 #### Execution Status
 
 ![state_machine](./assets/state_machine.svg)
+
+#### DataStream Transformations
+
+|Transformation|Result|Description
+|---|---|---
+|Map|DataStream --> DataStream|Takes one element and produces one element.
+|FlatMap|DataStream --> DataStream|Takes one element and produces zero, one, or more elements. 
+|Filter|DataStream --> DataStream|Evaluates a boolean function for each element and retains those for which the function returns true
+|KeyBy|DataStream --> KeyedStream|Logically partitions a stream into disjoint partitions. All records with the same key are assigned to the same partition. Internally, keyBy() is implemented with hash partitioning.
+|Fold|KeyedStream --> DataStream|A "rolling" fold on a keyed data stream with an initial value. Combines the current element with the last folded value and emits the new value.
+|Aggregations|KeyedStream --> DataStream|Rolling aggregations on a keyed data stream. The difference between min and minBy is that min returns the minimum value, whereas minBy returns the element that has the minimum value in this field
+|Window|KeyedStream --> WindowedSteam|Windows can be defined on already partitioned KeyedStreams. Windows group the data in each key according to some characteristic
+|WindowAll|DataStream --> AllWindowedStream|Windows can be defined on regular DataStreams. Windows group all the stream events according to some characteristic
+|Window Apply|WindowedStream --> DataStream </br>AllWindowedStream --> DataStream|Applies a general function to the window as a whole.
+|Window Reduce|WindowedStream --> DataStream|Applies a functional reduce function to the window and returns the reduced value.
+|Window Fold|WindowedStream --> DataStream|Applies a functional fold function to the window and returns the folded value.
+|Aggregations on windows|WindowedStream --> DataStream|Aggregates the contents of a window. The difference between min and minBy is that min returns the minimum value, whereas minBy returns the element that has the minimum value in this field
+|Union|DataStream*--> DataStream|Union of two or more data streams creating a new stream containing all the elements from all the streams.
+|Window Join|DataStream,DataStream --> DataStream|Join two data streams on a given key and a common window.
+|Interval Join|KeyedStream,KeyedStream --> DataStream|Join two elements e1 and e2 of two keyed streams with a common key over a given time interval, so that e1.timestamp + lowerBound <= e2.timestamp <= e1.timestamp + upperBound
+Window CoGroup|DataStream,DataStream → DataStream|Cogroups two data streams on a given key and a common window.
+|Connect|DataStream,DataStream --> ConnectedStream|"Connects" two data streams retaining their types. Connect allowing for shared state between the two streams.
+|CoMap, CoFlatMap|ConnectedStreams --> DataStream|Similar to map and flatMap on a connected data stream
+|Split|DataStream --> SplitStream|Split the stream into two or more streams according to some criterion.
+|Select|SplitStream --> DataStream|Select one or more streams from a split stream.
+|Iterate|DataStream --> IterativeStream --> DataStream|Creates a "feedback" loop in the flow, by redirecting the output of one operator to some previous operator. This is especially useful for defining algorithms that continuously update a model.
+|Extract Timestamps|DataStream --> DataStream|Extracts timestamps from records in order to work with windows that use event time semantics.
+|Project|DataStream --> DataStream|Selects a subset of fields from the tuples
+
+#### Physical partitioning
+
+|Transformation|Result|Description
+|---|---|---
+|Custom partitioning|DataStream --> DataStream|Uses a user-defined Partitioner to select the target task for each element.
+|Random partitioning|DataStream --> DataStream|Partitions elements randomly according to a uniform distribution.
+|Rebalancing|DataStream --> DataStream|Partitions elements round-robin, creating equal load per partition. Useful for performance optimization in the presence of data skew.
+|Rescaling|DataStream --> DataStream|Partitions elements, round-robin, to a subset of downstream operations.
+|Broadcasting|DataStream --> DataStream|Broadcasts elements to every partition.
+
+#### Task chaining and resource groups
+
+|Transformation|Description|example
+|---|---|--
+|Start new chain|Begin a new chain, starting with this operator. The two mappers will be chained, and filter will not be chained to the first mapper.|someStream.filter(...).map(...).startNewChain().map(...);
+|Disable chaining|Do not chain the map operator|someStream.map(...).disableChaining();
+|Set slot sharing group|Set the slot sharing group of an operation. Flink will put operations with the same slot sharing group into the same slot while keeping operations that don't have the slot sharing group in other slots. This can be used to isolate slots. The slot sharing group is inherited from input operations if all input operations are in the same slot sharing group. The name of the default slot sharing group is "default", operations can explicitly be put into this group by calling slotSharingGroup("default").|someStream.filter(...).slotSharingGroup("name");
