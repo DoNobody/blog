@@ -117,7 +117,11 @@ Record 是数据集或数据流的组成元素。Operator 和 Function接收 rec
 
 ![state_machine](./assets/state_machine.svg)
 
-#### DataStream Transformations
+### Event_time
+
+![times_clocks](./assets/times_clocks.svg)
+
+### DataStream Transformations
 
 |Transformation|Result|Description
 |---|---|---
