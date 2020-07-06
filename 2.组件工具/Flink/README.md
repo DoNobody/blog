@@ -117,11 +117,11 @@ Record 是数据集或数据流的组成元素。Operator 和 Function接收 rec
 
 ![state_machine](./assets/state_machine.svg)
 
-### Event_time
+## Event_time
 
 ![times_clocks](./assets/times_clocks.svg)
 
-### DataStream Transformations
+## DataStream Transformations
 
 |Transformation|Result|Description
 |---|---|---
@@ -149,7 +149,7 @@ Window CoGroup|DataStream,DataStream → DataStream|Cogroups two data streams on
 |Extract Timestamps|DataStream --> DataStream|Extracts timestamps from records in order to work with windows that use event time semantics.
 |Project|DataStream --> DataStream|Selects a subset of fields from the tuples
 
-#### Physical partitioning
+### Physical partitioning
 
 |Transformation|Result|Description
 |---|---|---
@@ -159,10 +159,180 @@ Window CoGroup|DataStream,DataStream → DataStream|Cogroups two data streams on
 |Rescaling|DataStream --> DataStream|Partitions elements, round-robin, to a subset of downstream operations.
 |Broadcasting|DataStream --> DataStream|Broadcasts elements to every partition.
 
-#### Task chaining and resource groups
+### Task chaining and resource groups
 
 |Transformation|Description|example
 |---|---|--
 |Start new chain|Begin a new chain, starting with this operator. The two mappers will be chained, and filter will not be chained to the first mapper.|someStream.filter(...).map(...).startNewChain().map(...);
 |Disable chaining|Do not chain the map operator|someStream.map(...).disableChaining();
 |Set slot sharing group|Set the slot sharing group of an operation. Flink will put operations with the same slot sharing group into the same slot while keeping operations that don't have the slot sharing group in other slots. This can be used to isolate slots. The slot sharing group is inherited from input operations if all input operations are in the same slot sharing group. The name of the default slot sharing group is "default", operations can explicitly be put into this group by calling slotSharingGroup("default").|someStream.filter(...).slotSharingGroup("name");
+
+## flink parallelism & slot
+
+![parallelism&slot](./assets/parallelism_slot.jpg)
+
+## send&receive data to TaskManager
+
+### Send data
+
+- 变量
+
+```java
+final String genre = "Action";
+
+lines.filter((FilterFunction<Tuple3<Long, String, String>>) movie -> {
+    String[] genres = movie.f2.split("\\|");
+
+    //使用变量
+    return Stream.of(genres).anyMatch(g -> g.equals(genre));
+}).print();
+```
+
+- 实现Rich函数,并用`withParameters`传递参数
+
+```java
+// Configuration 类来存储参数
+Configuration configuration = new Configuration();
+configuration.setString("genre", "Action");
+
+lines.filter(new FilterGenreWithParameters())
+        // 将参数传递给函数
+        .withParameters(configuration)
+        .print();
+
+// 其他
+...
+
+class FilterGenreWithParameters extends RichFilterFunction<Tuple3<Long, String, String>> {
+
+    String genre;
+
+    @Override
+    public void open(Configuration parameters) throws Exception {
+        //读取配置
+        genre = parameters.getString("genre", "");
+    }
+
+    @Override
+    public boolean filter(Tuple3<Long, String, String> movie) throws Exception {
+        String[] genres = movie.f2.split("\\|");
+
+        return Stream.of(genres).anyMatch(g -> g.equals(genre));
+    }
+}
+```
+
+- 使用全局作业参数
+
+```java
+    //读取命令行参数
+    ParameterTool parameterTool = ParameterTool.fromArgs(args);
+
+    final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+    // 设置全局作业参数
+    env.getConfig().setGlobalJobParameters(parameterTool);
+
+    class FilterGenreWithGlobalEnv extends RichFilterFunction<Tuple3<Long, String, String>> {
+
+        @Override
+        public boolean filter(Tuple3<Long, String, String> movie) throws Exception {
+            String[] genres = movie.f2.split("\\|");
+            //获取全局的配置
+            ParameterTool parameterTool = (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
+            //读取配置
+            String genre = parameterTool.get("genre");
+
+            return Stream.of(genres).anyMatch(g -> g.equals(genre));
+        }
+    }
+```
+
+- 使用广播变量
+
+```java
+DataSet<Integer> toBroadcast = env.fromElements(1, 2, 3);
+// 获取要忽略的单词集合
+DataSet<String> wordsToIgnore = ...
+
+data.map(new RichFlatMapFunction<String, String>() {
+
+    // 存储要忽略的单词集合. 这将存储在 TaskManager 的内存中
+    Collection<String> wordsToIgnore;
+
+    @Override
+    public void open(Configuration parameters) throws Exception {
+        //读取要忽略的单词的集合
+        wordsToIgnore = getRuntimeContext().getBroadcastVariable("wordsToIgnore");
+    }
+
+    @Override
+    public String map(String line, Collector<String> out) throws Exception {
+        String[] words = line.split("\\W+");
+        for (String word : words)
+            //使用要忽略的单词集合
+            if (wordsToIgnore.contains(word))
+                out.collect(new Tuple2<>(word, 1));
+    }
+    //通过广播变量传递数据集
+}).withBroadcastSet(wordsToIgnore, "wordsToIgnore");
+```
+
+- 读取第三方系统
+
+```java
+ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+
+//从 HDFS 注册文件
+env.registerCachedFile("hdfs:///path/to/file", "machineLearningModel")
+
+...
+
+class MyClassifier extends RichMapFunction<String, Integer> {
+
+    @Override
+    public void open(Configuration config) {
+      // 从分布式文件系统中读取
+      File machineLearningModel = getRuntimeContext().getDistributedCache().getFile("machineLearningModel");
+      ...
+    }
+
+    @Override
+    public Integer map(String value) throws Exception {
+      ...
+    }
+}
+
+```
+
+- 累加器Accumulator
+
+```java
+lines.flatMap(new RichFlatMapFunction<String, Tuple2<String, Integer>>() {
+
+    //创建一个累加器
+    private IntCounter linesNum = new IntCounter();
+
+    @Override
+    public void open(Configuration parameters) throws Exception {
+        //注册一个累加器
+        getRuntimeContext().addAccumulator("linesNum", linesNum);
+    }
+
+    @Override
+    public void flatMap(String line, Collector<Tuple2<String, Integer>> out) throws Exception {
+        String[] words = line.split("\\W+");
+        for (String word : words) {
+            out.collect(new Tuple2<>(word, 1));
+        }
+        // 处理每一行数据后 linesNum 递增
+        linesNum.add(1);
+    }
+})
+.groupBy(0)
+.sum(1)
+.print();
+
+//获取累加器结果
+int linesNum = env.getLastJobExecutionResult().getAccumulatorResult("linesNum");
+System.out.println(linesNum);
+```
