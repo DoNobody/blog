@@ -19,3 +19,10 @@
 运行 choco 测试chocolatey是否安装成功
 升级Chocolatey，运行 choco upgrade chocolatey
 ```
+
+### 查看windows系统内核版本
+
+```shell
+# powershell中：
+Get-WmiObject -Class Win32_OperatingSystem
+```
