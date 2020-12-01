@@ -43,7 +43,13 @@ pipeline {
 def generateStage(item) {
     return {
         stage("${item}") {
-            build job: "${item}", parameters: [string(name: 'JOB_DATE', value: "${JOB_DATE}")],wait:true
+            try {
+                build job: "${item}", parameters: [string(name: 'JOB_DATE', value: "${JOB_DATE}")],wait:true
+            }
+            catch (exc) {
+                sleep 1800
+                build job: "${item}", parameters: [string(name: 'JOB_DATE', value: "${JOB_DATE}")],wait:true
+            }
         }
     }
 }

@@ -1,14 +1,28 @@
 package main
 
 import (
+	"bytes"
 	"container/list"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"os"
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/labstack/echo"
+	"github.com/pkg/profile"
+	"github.com/skip2/go-qrcode"
 )
 
 func main() {
+
+	// 性能测试
+	stopper := profile.Start(profile.CPUProfile, profile.ProfilePath("."))
+
+	// defer stopper.Stop()
+
 	/* 这是我的第一个简单的程序 */
 	fmt.Println("Hello, World!")
 	var i, j int
@@ -142,6 +156,83 @@ func main() {
 		fmt.Println("List:", i.Value)
 	}
 
+	// 快速排序
+	qsort(s, 0, len(s)-1)
+	fmt.Println(s)
+
+	// 生成二维码
+	qrcode.WriteFile("https://donobody.github.io/blog/#/", qrcode.Medium, 256, "./golang_qrcode.png")
+
+	// 引入外部包，验证go mod 依赖
+	e := echo.New()
+	e.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Hello, World!")
+	})
+
+	// 自己构建一个telnet服务
+	exitChan := make(chan int)
+
+	// 将服务器并发运行
+	go server("127.0.0.1:7001", exitChan)
+
+	go e.Start(":1323")
+	//e.Logger.Fatal(e.Start(":1323"))
+
+	// 写入文件
+	info := []Website{{"Golang", "http://c.biancheng.net/golang/", []string{"http://c.biancheng.net/cplus/", "http://c.biancheng.net/linux_tutorial/"}}, {"Java", "http://c.biancheng.net/java/", []string{"http://c.biancheng.net/socket/", "http://c.biancheng.net/python/"}}}
+
+	filePtr, err := os.Create("info.json")
+	if err != nil {
+		fmt.Println("创建文件失败", err.Error())
+		return
+	}
+
+	defer filePtr.Close()
+
+	encoder := json.NewEncoder(filePtr)
+
+	err = encoder.Encode(info)
+	if err != nil {
+		fmt.Println("编码错误", err.Error())
+	} else {
+		fmt.Println("编码成功")
+	}
+
+	// 读取json文件
+	filePtr1, err := os.Open("./info.json")
+	if err != nil {
+		fmt.Println("打开文件失败", err.Error())
+	}
+
+	// defer filePtr1.Close()
+
+	var info1 []Website
+
+	decoder := json.NewDecoder(filePtr1)
+	err = decoder.Decode(&info1)
+	info2, err := json.Marshal(info1)
+	if err != nil {
+		fmt.Println("String转化失败", err.Error())
+	}
+	var str bytes.Buffer
+	err = json.Indent(&str, info2, "", "  ")
+
+	if err != nil {
+		fmt.Println("解码失败", err.Error())
+	} else {
+		fmt.Println("解码成功")
+		fmt.Println(info1)
+		fmt.Println(str.String())
+	}
+
+	// 通道阻塞, 等待接收返回值
+	code := <-exitChan
+
+	// 中断退出，退出前保存性能报告
+	stopper.Stop()
+	// 标记程序返回值并退出
+	os.Exit(code)
+
 }
 
 func getSequence() func() int {
@@ -234,4 +325,13 @@ type Vehicle struct {
 	// 潜入两个结构体
 	FakeBrand
 	Brand
+}
+
+// 写入json文件的结构体
+
+// Website ...
+type Website struct {
+	Name   string `xml:"name,attr"`
+	URL    string
+	Course []string
 }
