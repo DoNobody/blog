@@ -276,5 +276,5 @@
 
 
 ```pdf
-./assets/深入浅出GolangRuntime-full.pptx
+./assets/深入浅出GolangRuntime-full.pdf
 ```
