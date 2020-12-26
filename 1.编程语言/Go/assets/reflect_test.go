@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"reflect"
+	"testing"
 )
 
-func main1() {
+func TestReflect(t *testing.T) {
 
 	// 声明一个空结构体
 	type cat struct {
@@ -20,18 +20,18 @@ func main1() {
 
 	valueOfCat := reflect.ValueOf(ins)
 
-	fmt.Println(valueOfCat.Interface().(cat))
+	t.Log(valueOfCat.Interface().(cat))
 
 	// 遍历结构体所有成员
 	for i := 0; i < typeOfCat.NumField(); i++ {
 		// 获取每个成员的结构体字段类型
 		fieldType := typeOfCat.Field(i)
 		// 输出成员名和tag
-		fmt.Printf("name: %v  tag: '%v'\n", fieldType.Name, fieldType.Tag)
+		t.Logf("name: %v  tag: '%v'\n", fieldType.Name, fieldType.Tag)
 	}
 	// 通过字段名, 找到字段类型信息
 	if catType, ok := typeOfCat.FieldByName("Type"); ok {
 		// 从tag中取出需要的tag
-		fmt.Println(catType.Tag.Get("json"), catType.Tag.Get("id"))
+		t.Log(catType.Tag.Get("json"), catType.Tag.Get("id"))
 	}
 }
