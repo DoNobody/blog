@@ -204,7 +204,7 @@ func main() {
 		fmt.Println("打开文件失败", err.Error())
 	}
 
-	// defer filePtr1.Close()
+	defer filePtr1.Close()
 
 	var info1 []Website
 
@@ -224,6 +224,11 @@ func main() {
 		fmt.Println(info1)
 		fmt.Println(str.String())
 	}
+
+	// 验证defer语句
+	printNumbers()
+	printNumbers1()
+	printNumbers2()
 
 	// 通道阻塞, 等待接收返回值
 	code := <-exitChan
@@ -334,4 +339,26 @@ type Website struct {
 	Name   string `xml:"name,attr"`
 	URL    string
 	Course []string
+}
+
+func printNumbers() {
+	for i := 0; i < 5; i++ {
+		defer fmt.Printf("defer 直接语句：%d", i)
+	}
+}
+
+func printNumbers1() {
+	for i := 0; i < 5; i++ {
+		defer func() {
+			fmt.Printf("defer匿名函数：%d", i)
+		}()
+	}
+}
+
+func printNumbers2() {
+	for i := 0; i < 5; i++ {
+		defer func(j int) {
+			fmt.Printf("defer参数匿名函数：%d", j)
+		}(i)
+	}
 }

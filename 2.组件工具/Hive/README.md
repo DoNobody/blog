@@ -35,3 +35,81 @@ select `(name|id|pwd)?+.+` from tableName;
 set hive.execution.engine=spark;
 set spark.executor.memory=8g;
 ```
+
+### hive中行转列
+
+> 原始数据
+
+|id|goods|
+|---|---|
+|80|`[{"floorImgUrl":"https://hotwheel-static.jianlc.com/shop/20201230/1609299782739.png","floorExhibitionMode":2,"goods":[{"goodId":"64686117450","channel":1,"jxCashGiftId":"5160ea3579bc6f43","cashGiftAmount":5,"cashGiftStartTime":"2020.12.30 00:00","cashGiftEndTime":"2021.01.05 23:59"},{"goodId":"30808459309","channel":1,"jxCashGiftId":"c9672e705444178a","cashGiftAmount":5,"cashGiftStartTime":"2020.12.30 00:00","cashGiftEndTime":"2021.01.05 23:59"}]}]`|
+
+> SQL处理过程
+
+```sql
+select 
+id,
+regexp_extract(json1,'"goodId":"([\\d_-]*)"', 1) as goodId,
+regexp_extract(json1,'"channel":([\\d_-]*)', 1) as channel,
+regexp_extract(json1,'"jxCashGiftId":"([a-zA-Z0-9]*)"', 1) as jxCashGiftId,
+regexp_extract(json1,'"cashGiftAmount":([\\d_-]*)', 1) as cashGiftAmount,
+regexp_extract(json1,'"cashGiftStartTime":"([\\d\.\\s:]*)"', 1) as cashGiftStartTime,
+regexp_extract(json1,'"cashGiftEndTime":"([\\d\.\\s:]*)"', 1) as cashGiftEndTime
+from
+(select id,json1 from activity_content
+lateral view  explode(split(regexp_replace(get_json_object(goods, '$[*].goods[*]'),'\\[\\{|\\\\}]',''),'\\}\\,\\{')) js as json1
+where id = 80 
+) tmp
+```
+
+> 处理后
+
+|id|goodid|channel|jxCashGiftId|cashGiftAmount|cashGiftStartTime|cashGiftEndTime|
+|---|---|---|---|---|---|---|
+|80|64686117450|1|5160ea3579bc6f43|5|2020.12.30 00:00|2021.01.05 23:59|
+|80|30808459309|1|c9672e705444178a|5|2020.12.30 00:00|2021.01.05 23:59|
+
+## hive中大数据量优化历程
+
+### 千亿级别的查询优化
+
+> [漫谈千亿级数据优化实践：一次数据优化实录](https://cloud.tencent.com/developer/article/1042700)
+
+- 分区
+- 索引
+- 分桶
+- 活跃度区分
+- 新的数据结构
+
+### 数据倾斜问题
+
+- 表象
+  - 用Hive算数据的时候reduce阶段卡在99.99%
+  - 用SparkStreaming做实时算法时候，一直会有executor出现OOM的错误，但是其余的executor内存使用率却很低。
+  - 数据量大，单台机器完全无法处理。
+  - hadoop中的数据倾斜
+    - 有一个或多个reduce卡住
+    - 各种container报错OOM
+    - 读写的数据量极大，至少远远超过其它正常的reduce
+  - Spark中的数据倾斜
+    - Executor lost，OOM，Shuffle过程出错
+    - Driver OOM
+    - 单个Executor执行时间特别久，整体任务卡在某个阶段不能结束
+    - 正常运行的任务突然失败
+    - Spark streaming程序：map,join方法中出现OOM
+- 原因
+  - 计算过程中需要在单独一个节点上计算
+  - 不合理的shuffle方式
+  - 数据本身倾斜很严重
+- 解决
+  - 业务场景
+    - 业务逻辑场景
+      - 有损处理： 删除过滤
+      - 无损处理： 对分布不均匀的数据单独计算，先打散再汇聚
+      - 数据预处理
+    - 程序优化、调整参数
+      - 采用map join
+      - count distinct的操作，先转成group，再count
+      - hive.groupby.skewindata=true
+      - left semi jioin的使用
+      - 设置map端输出、中间结果压缩

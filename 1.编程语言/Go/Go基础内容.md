@@ -274,7 +274,24 @@
 * **spans**: 存放 mspan 的指针，根据 spans 区域的信息可以很容易找到 mspan. 它可以在 GC 时更快速的找到的大块的内存 mspan.
 * ![内存分配图](./assets/内存分配模型.jpg)
 
-
 ```pdf
-./assets/深入浅出GolangRuntime-full.pdf
+1.编程语言/Go/assets/深入浅出GolangRuntime-full.pdf
 ```
+
+## Go 特性总结
+
+### Go 中的数据结构比较特性
+
+* 可排序的数据类型有三种： Integer，Floating-point，和String
+* 可比较的数据类型：Integer,Floating-point,String, Boolean, Complex, Pointer，Channel，Interface和Array
+* 不可以比较的数据类型：Slice, Map, 和Function
+
+### Go struct 能不能比较
+
+* 同一个struct两个赋值相同的实例，因为成员变量带有了不能比较的成员，所以不能比较
+* 上述两个struct的指针可以比较，指针比较为false，可以使用`reflect.DeepEqual(&struct1, &struct2)` 比较
+* 不通的struct可以进行类型强转，强转后可以比较（前提是struct类型本身可以比较）
+
+### Go defer 语句
+
+> defer语句的执行时机总是在直接包含它的那个函数把流程控制权交还给它的调用方的前一刻，无论defer语句出现在外围函数的函数体中的哪一个位置上。

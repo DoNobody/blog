@@ -1,5 +1,11 @@
 # Flink
 
+## 入门书籍
+
+```pdf
+2.组件工具/Flink/assets/零基础入门_Apache_Flink.pdf
+```
+
 ## 应用场景
 
 ### 事件驱动型应用
@@ -77,7 +83,7 @@
 
 ### Record
 
-Record 是数据集或数据流的组成元素。Operator 和 Function接收 record 作为输入，并将 record 作为输出发出。
+> Record 是数据集或数据流的组成元素。Operator 和 Function接收 record 作为输入，并将 record 作为输出发出。
 
 ### Flink Session Cluster
 
@@ -119,6 +125,9 @@ Record 是数据集或数据流的组成元素。Operator 和 Function接收 rec
 
 ## Event_time
 
+* 事件时间(event time)： 事件产生的时间，记录的是设备生产(或者存储)事件的时间
+* 摄取时间(ingestion time)： Flink 读取事件时记录的时间
+* 处理时间(processing time)： Flink pipeline 中具体算子处理事件的时间
 ![times_clocks](./assets/times_clocks.svg)
 
 ## DataStream Transformations
@@ -336,3 +345,56 @@ lines.flatMap(new RichFlatMapFunction<String, Tuple2<String, Integer>>() {
 int linesNum = env.getLastJobExecutionResult().getAccumulatorResult("linesNum");
 System.out.println(linesNum);
 ```
+
+## 为什么flink自己参与状态管理
+
+### 状态管理的优势
+
+* **本地性**:Flink状态是存储在使用它们的机器本地，并且可以以内存访问速度来获取
+* **持久性**:Flink状态是容错，例如，它可以按照一定的时间间隔产生checkpoint，并且在任务失败后进行恢复。
+* **纵向可扩展性**:Flink状态可以存储在集成的RocksDB实例中，这种方式可以通过增加本地磁盘来扩展空间。
+* **横向可扩展性**:Flink状态可以随着集群的扩缩容重新分布。
+* **可查询性**:Flink状态可以通过使用[状态查询API](https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/dev/stream/state/queryable_state.html)从外部进行查询。
+
+## flink任务部署方式
+
+* Flink Session 集群
+* Flink Job 集群
+* Flink Application 集群
+
+## flink 预设的诸多方法
+
+### flink sources
+
+* File-based:
+  * readTextFile(path)
+  * readFile(fileInputFormat, path)
+  * readFile(fileInputFormat, path, watchType, interval, pathFilter, typeInfo)
+* Socket-based:
+  * socketTextStream
+* Collection-based:
+  * fromCollection(Collection)
+  * fromCollection(Iterator, Class)
+  * fromElements(T ...)
+  * fromParallelCollection(SplittableIterator, Class)
+  * generateSequence(from, to)
+* Custom:
+  * addSource
+
+### Data Sinks
+
+* writeAsText() / TextOutputFormat
+* writeAsCsv(...) / CsvOutputFormat
+* print() / printToErr()
+* writeUsingOutputFormat() / FileOutputFormat
+* writeToSocket
+* addSink
+
+### 用户自定义Function的方式
+
+* 实现接口
+* 匿名类
+* Java 8 Lambdas
+* Rich functions
+  * Rich functions 还提供了四个方法：open、close、getRuntimeContext 和 setRuntimeContext。
+  * 
