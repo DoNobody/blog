@@ -6,5 +6,3 @@ services:
     container_name: nginx
     ports:
       - 80:80
-    volumes:
-      - ./conf.d:/etc/nginx/conf.d 

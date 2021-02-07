@@ -6,7 +6,7 @@
 
 > -DarchetypeCatalog=internal
 
-## VScode 中maven项目支持
+## VScode 中maven项目支持(m2e)
 
 > 默认VScode 中支持的插件Java Extension Pack, 对java项目的支持都是需要eclipse风格的项目
 > 即: 需要 `.project`, `classpath` 两个文件
