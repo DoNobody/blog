@@ -43,7 +43,13 @@ pipeline {
 def generateStage(item) {
     return {
         stage("${item}") {
-            build job: "${item}", parameters: [string(name: 'JOB_DATE', value: "${JOB_DATE}")],wait:true
+            try {
+                build job: "${item}", parameters: [string(name: 'JOB_DATE', value: "${JOB_DATE}")],wait:true
+            }
+            catch (exc) {
+                sleep 1800
+                build job: "${item}", parameters: [string(name: 'JOB_DATE', value: "${JOB_DATE}")],wait:true
+            }
         }
     }
 }
@@ -136,4 +142,11 @@ pipeline {
         }
     }
 }
+```
+
+## Jenkins shell 后台运行防终止
+
+```bash
+# 命令行前添加环境变量
+BUILD_ID=DONTKILLME
 ```

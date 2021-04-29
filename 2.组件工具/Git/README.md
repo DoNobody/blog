@@ -79,3 +79,141 @@ git merge upstreamName/master  # 合并更新内容。
 # Error: Git refusing to merge unrelated histories
 git merge upstreamName/master --allow-unrelated-histories
 ```
+
+## git 管理分支
+
+### 使用到的shell脚本
+
+```shell
+# 判断分支是否存在
+exists_branch_tag() {
+    for arg in "$@"
+    do
+    res=$(git branch |grep -w "$arg" || git tag -l |grep -w "$arg")
+    if [ $? -ne 0 ]; then
+    echo -e "分支:$arg 不存在"
+    return 1
+    fi
+    done
+    echo -e "#@"
+    return 0
+}
+
+# 判断tag是否存在
+exists_tag() {
+    for arg in "$@"
+    do
+        res=$(git tag -l|grep -w "$arg")
+        if [[  $? -eq 0 ]] && [[ ${#arg} -eq 20 ]] && [[ "${arg:0:1}" -eq "b" || "${arg:0:1}" -eq "r" ]]; then
+            :
+        else
+            echo -e "Tag :$arg 不存在"
+            return 1
+        fi
+    done
+    echo -e "$@"
+    return 0
+}
+
+# 获取最后提交的commitid
+branch_last_commitid() {
+    if [ $# -ge 1 ]; then
+        # 参数未分支名称
+        echo -e $(git log -n 1 --pretty=format:"%h" "$1")
+    else
+        echo -e $(git log -n 1 --pretty=format:"%h")
+    fi
+}
+
+# 比较B 是否在A 之后提交了新内容
+diff_log_two_branchs() {
+    first_branch=$1
+    [ $# -lt 2 ] && second_branch='master' || second_branch=$2
+
+    res=$(exists_branch_tag $first_branch $second_branch)
+    [  $? -ne 0 ] && echo -e "$res" && return 1
+
+    foward_branch=$(git log $first_branch..$second_branch)
+    if [ -z "$foward_branch" ];then
+        echo -e "分支先后顺序正常"
+        return 0
+    else
+        echo -e "分支:{$second_branch}有新提交,请先合并到$first_branch上:\n $foward_branch"
+        return 1
+    fi
+}
+
+# 生成btag
+create_btag() {
+    commitId=$(branch_last_commitid)
+    btime=$(date +"%y%m%d%H%M")
+    btag="b-$btime-${commitId}"
+    # 当前代码 恢复commit,然后打btag
+    res=$(git reset "${commitId}" --hard && git tag "$btag" && git push origin "$btag")
+    [  $? -ne 0 ] && echo -e "$res" && return 1
+    # delete remote tag
+    # git push origin :refs/tags/"$btag"
+    echo -e "$btag"
+    return 0
+}
+
+# 把A 合并到 B 上
+merge_push() {
+    first_branch=$1
+    [[ $# -lt 2 ]] && second_branch='master' || second_branch=$2
+
+    res=$(exists_branch_tag $first_branch $second_branch)
+    [[ $? -ne 0 ]] && echo -e $res && return 1
+
+    # 判断second_branch是否有新的独立提交
+    res=$(diff_log_two_branchs $first_branch $second_branch)
+    [[ $? -ne 0 ]] && echo -e $res && return 1
+
+    # 代码回归到最后分支,强制更新代码
+    git reset HEAD --hard && git checkout $first_branch && git pull origin $first_branch || git pull origin refs/tags/$first_branch
+    # 合并到master上。
+    git checkout $second_branch && git pull origin $second_branch || git pull origin refs/tags/$second_branch
+    merge_res=$(git merge --no-ff $first_branch|grep -wE "CONFLICT \(content\)|Automatic merge failed")
+    if [ $? -eq 0 ]; then
+        #有冲突
+        git reset HEAD --hard
+        echo -e "在$second_branch 上合并$first_branch 有冲突,请修复后重试:\n $merge_res"
+        return 1
+    fi
+    git push origin "$second_branch"
+    echo -e "merge $first_branch 到 $second_branch 成功"
+    return 0
+}
+
+# rtag 合并
+# 将rtag A 合并到 B 上
+create_rtag() {
+    first_branch=$1
+    [[ $# -lt 2 ]] && second_branch='master' || second_branch=$2
+
+    # 判断 A 是否是btag
+    res=$(exists_tag $first_branch)
+    [[ $? -ne 0 ]] && echo -e $res && return 1
+
+    # 进行合并
+    res=$(merge_push $first_branch $second_branch)
+    [[ $? -ne 0 ]] && echo -e $res && return 1
+
+    # 打rtag, 选择A的最后一个commitid目的是rtag和btag有联系
+    commitId=$(branch_last_commitid $first_branch)
+    rtime=$(date +"%y%m%d%H%M")
+    rtag="r-$rtime-${commitId}"
+    git checkout $second_branch
+    git tag "$rtag"
+    git push origin "$rtag"
+    echo -e "$rtag"
+    return 0
+}
+```
+
+### 分支处理
+
+```shell
+# 清理当前分支，并check到新的分支或者tag上。
+git reset HEAD --hard && git checkout $branch && git pull origin $branch || git pull origin refs/tags/$branch
+```

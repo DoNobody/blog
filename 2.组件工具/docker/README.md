@@ -8,7 +8,7 @@
 
 ### 多阶段构建
 
-> COPY --FROM=0 <source image/source file> <target>  
+> COPY --FROM=0 `<source image/source file>` `<target>`
 > COPY --from=nginx:latest /etc/nginx/nginx.conf /nginx.conf
 
 ### ARG 构建参数

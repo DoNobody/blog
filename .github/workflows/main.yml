@@ -32,11 +32,12 @@ jobs:
         git checkout gh-pages
         git pull
         git merge master
-        find . -mindepth 2 -name "*.md" | awk -F'/' 'BEGIN {RS=".md"} {k=$3;v=$2"/"$3"/"$4;if ($4=="README") {k=$3;v=$2"/"$3"/"} else if ($4=="") {k=$3;v=$2"/"$3} else k=$3"_"$4;arr[$2]=arr[$2]"\n  - ["k"]("v")"} END { num = asorti(arr, indices); for (i=1; i<=num; ++i) if (indices[i]) print "- "indices[i], arr[indices[i]]}' > _navbar.md
-        sed 's/^-/##/g' _navbar.md |sed 's/^  -/###/g' > README.md
-        find . -mindepth 2 -name "*.md"|xargs -i bash -c 'grep -Fq "#### [首页](/)" {}||sed -i "1 i\#### [首页](/)" {}'
+        find . -mindepth 2 -name "*.md" | awk -F'/' 'BEGIN {RS=".md"} {k=$3;v="./"$2"/"$3"/"$4;if ($4=="README") {k=$3;v="./"$2"/"$3"/"} else if ($4=="") {k=$3;v="./"$2"/"$3} else k=$3"_"$4;arr[$2]=arr[$2]"\n  - ["k"]("v")"} END { num = asorti(arr, indices); for (i=1; i<=num; ++i) if (indices[i]) print "- "indices[i], arr[indices[i]]}' > menu.md
+        sed 's/^-/---\n#/g' menu.md |sed 's/^  - \(\[\(\w*\)\]\w*\)/## \2\n  > \1/g' > README.md 
+        sed -i '1d' README.md
+        find . -mindepth 2 -name "*.md"|xargs -i bash -c 'grep -Fq "[首页](/)" {}||sed -i "1 i\[首页](/)" {}'
         git add .
-        git status|grep -q "nothing to commit, working tree clean"||git commit -am "自动生成navbar.md"
+        git status|grep -q "nothing to commit, working tree clean"||git commit -am "自动生成menu.md"
     - name: GitHub Push
       uses: ad-m/github-push-action@v0.6.0
       with:
