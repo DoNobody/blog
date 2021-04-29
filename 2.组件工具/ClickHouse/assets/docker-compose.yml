@@ -1,0 +1,37 @@
+version: '2'
+
+services:
+  clickhouse-server:
+    container_name: clickhouse-server
+    image: yandex/clickhouse-server
+    ports:
+     - 8123:8123
+     - 9000:9000
+    volumes:
+      - /Users/work_space/docker_share/clickhouse:/var/lib/clickhouse
+    network_mode: bridge
+    restart: always
+  clickhouse-client:
+    container_name: clickhouse-client
+    image: yandex/clickhouse-client
+    links: 
+      - clickhouse-server
+    depends_on: 
+      - clickhouse-server 
+    command: 
+      --host clickhouse-server
+    tty: true
+    stdin_open: true
+    network_mode: bridge
+    restart: always
+  tabix:
+    container_name: tabix
+    image: spoonest/clickhouse-tabix-web-client
+    ports:
+      - 8080:80
+    links: 
+      - clickhouse-server
+    depends_on: 
+      - clickhouse-server  
+    network_mode: bridge
+    restart: always

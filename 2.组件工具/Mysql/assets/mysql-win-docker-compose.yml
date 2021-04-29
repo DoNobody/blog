@@ -1,0 +1,15 @@
+version: '2'
+
+services:
+  db:
+    container_name: mysql
+    image: mysql:5.7
+    ports:
+     - 3306:3306
+    volumes:
+      - /d/workspace/docker_share/mysql/:/var/lib/mysql
+      - ./my.cnf:/etc/mysql/conf.d/my.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    network_mode: bridge
+    restart: always
