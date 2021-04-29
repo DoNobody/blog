@@ -1,3 +1,4 @@
+[首页](/)
 # 记录Windows下的日常
 
 ## Chocolatey 包管理工具

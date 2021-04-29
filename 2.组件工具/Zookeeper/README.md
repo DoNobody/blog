@@ -1,3 +1,4 @@
+[首页](/)
 # Zookeeper 学习
 
 ## Observer 特性
