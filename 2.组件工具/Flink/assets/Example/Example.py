@@ -3,6 +3,7 @@ from pyflink.table import StreamTableEnvironment, EnvironmentSettings, DataTypes
 from pyflink.table.udf import udf
 import json,re,base64
 from urllib import parse
+import platform
 
 
 # 解析 IP库的代码
@@ -174,6 +175,17 @@ class IPCz:
         return (b << 16) + a
 
 
+@udf(result_type=DataTypes.STRING())
+def get_key_from_str(data, key):
+    try:
+      if not key:
+          return str(data)
+      data_json = json.loads(data)
+      if key in data_json:
+          return str(data_json.get(key))
+    except Exception as e:
+      raise e
+
 
 @udf(result_type=DataTypes.STRING())
 def get_ipinfo(ipstr):
@@ -203,22 +215,29 @@ def get_token(token):
     except Exception as e:
       pass
 
+@udf(result_type=DataTypes.STRING())
+def url_unquote(url):
+    try:
+        return parse.unquote(url)
+    except Exception:
+        return url
 
 
 def log_processing():
     env_settings = EnvironmentSettings.new_instance().in_streaming_mode().use_blink_planner().build()
     t_env = StreamTableEnvironment.create(environment_settings=env_settings)
-    
-    # specify connector and format jars
-    t_env.get_config().get_configuration().set_string("pipeline.jars", "file:///Users/liuhongwei/.m2/repository/org/apache/flink/flink-connector-kafka_2.11/1.12.0/flink-connector-kafka_2.11-1.12.0.jar;" + \
-                                                                       "file:///Users/liuhongwei/.m2/repository/net/sf/json-lib/json-lib/2.3/json-lib-2.3-jdk15.jar;" + \
-                                                                       "file:///Users/liuhongwei/.m2/repository/org/apache/kafka/kafka-clients/2.4.1/kafka-clients-2.4.1.jar;" + \
-                                                                       "file:///Users/liuhongwei/.m2/repository/com/aliyun/flink-connector-clickhouse/1.12.0/flink-connector-clickhouse-1.12.0.jar;" + \
-                                                                       "file:///Users/liuhongwei/.m2/repository/org/apache/flink/flink-connector-jdbc_2.11/1.12.0/flink-connector-jdbc_2.11-1.12.0.jar;" + \
-                                                                       "file:///Users/liuhongwei/.m2/repository/mysql/mysql-connector-java/8.0.20/mysql-connector-java-8.0.20.jar" )
-    
-    t_env.get_config().get_configuration().set_string("parallelism.default", "1")
 
+    # specify connector and format jars
+    if platform.system() == 'Darwin':
+        t_env.get_config().get_configuration().set_string("pipeline.jars", "file:///Users/liuhongwei/.m2/repository/org/apache/flink/flink-connector-kafka_2.11/1.12.0/flink-connector-kafka_2.11-1.12.0.jar;file:///Users/liuhongwei/.m2/repository/org/apache/kafka/kafka-clients/2.4.1/kafka-clients-2.4.1.jar")
+        t_env.get_config().get_configuration().set_string("parallelism.default", "1")
+    else:
+        t_env.get_config().get_configuration().set_string("pipeline.jars", "file:///server/flink/jars/flink-connector-kafka_2.11-1.12.0.jar;file:///server/flink/jars/json-lib-2.3-jdk15.jar;file:///server/flink/jars/kafka-clients-2.4.1.jar")
+        t_env.get_config().get_configuration().set_string("parallelism.default", "4")
+ 
+    
+    
+    # 处理 markTopic
     source_ddl = """
             CREATE TABLE kafka_table(
                 `appKey` STRING,
@@ -232,6 +251,7 @@ def log_processing():
                 `pageUrl` STRING,
                 `module` STRING,
                 `subModule` STRING,
+                `submodule` STRING,
                 `content` STRING,
                 `stime` BIGINT,
                 `docType` STRING,
@@ -251,30 +271,54 @@ def log_processing():
                 `closeTime` STRING,
                 `currentTime` STRING,
                 `loadTime` STRING,
+                `platform` STRING, 
                 `proctime` AS PROCTIME(),
                 `eventTime` AS TO_TIMESTAMP(FROM_UNIXTIME(stime/1000, 'yyyy-MM-dd HH:mm:ss')),
-                WATERMARK FOR eventTime AS eventTime - INTERVAL '5' SECOND 
+                WATERMARK FOR eventTime AS eventTime - INTERVAL '5' SECOND
             ) WITH (
               'connector' = 'kafka',
               'topic' = 'markTopic',
               'properties.bootstrap.servers' = 'kafka01.tp.base.phd2.jianlc.jlc:9091,kafka02.tp.base.phd2.jianlc.jlc:9091',
-              'properties.group.id' = 'test_3',
-              'scan.startup.mode' = 'latest-offset', 
+              'properties.group.id' = 'marktopic_3',
               'format' = 'json'
             )
             """
 
-# 'scan.startup.mode' = 'earliest-offset', 
-# 'scan.startup.mode' = 'latest-offset',
+    # 处理 apmMobile
+    source1_ddl = """
+        CREATE TABLE kafka_table1(
+            `stime` BIGINT,
+            `stype` STRING,
+            `userId` STRING,
+            `module` STRING,
+            `netType` STRING,
+            `ipAddress` STRING,
+            `appVersion` STRING,
+            `tempUid` STRING,
+            `model` STRING,
+            `packageName` STRING,
+            `docType` STRING,
+            `idfa` STRING,
+            `operSystem` STRING,
+            `channel` STRING,
+            `platform` STRING,
+            `proctime` AS PROCTIME(),
+            `eventTime` AS TO_TIMESTAMP(FROM_UNIXTIME(stime/1000, 'yyyy-MM-dd HH:mm:ss')),
+            WATERMARK FOR eventTime AS eventTime - INTERVAL '5' SECOND
+        ) WITH (
+            'connector' = 'kafka',
+            'topic' = 'apmMobile',
+            'properties.bootstrap.servers' = 'kafka01.tp.base.phd2.jianlc.jlc:9091,kafka02.tp.base.phd2.jianlc.jlc:9091',
+            'properties.group.id' = 'apmmobile_3',
+            'format' = 'json'
+        )
+        """
 
-# docType,
-# SPLIT_INDEX(ipAddress,',',0) ipAddress, 
-# get_iplocal(ipAddress,'city_name') ipLocal,
-# packageName 
-
+# # 'scan.startup.mode' = 'earliest-offset',
+# # 'scan.startup.mode' = 'latest-offset',
 
     query_sql = """
-        select 
+        select
           stime,
           appkey,
           userid,
@@ -285,26 +329,31 @@ def log_processing():
           pageurl,
           COALESCE(module1,pageurl,referer) module1,
           COALESCE(submodule,module1,pageurl,referer) submodule,
-          content,
-          itemid,
+          url_unquote(content) content,
+          url_unquote(itemid) itemid,
           channel,
           packagename,
           useragent,
           ipaddress,
           SPLIT_INDEX(get_ipinfo(ipaddress), ' ',0) iplocal,
-          SPLIT_INDEX(get_ipinfo(ipaddress), ' ',1) ipoperator
-        from 
-        (select 
+          SPLIT_INDEX(get_ipinfo(ipaddress), ' ',1) ipoperator,
+          doctype,
+          appversion,
+          platform
+        from
+        (select
           from_unixtime(stime/1000) stime,
           `appKey` appkey,
-          COALESCE(userId, get_token(token), get_token(pageUrl), get_token(referrer),get_token(reqUrl)) userid, 
+          COALESCE(userId, get_token(token), get_token(pageUrl), get_token(referrer),get_token(reqUrl)) userid,
           `token`,
           `sessionId` sessionid,
           COALESCE(traceId, tranceId, tempUid) traceid,
           SPLIT_INDEX(SPLIT_INDEX(COALESCE(referer,referrer), '?', 0),'#',0) as referer,
           SPLIT_INDEX(SPLIT_INDEX(COALESCE(pageUrl,reqUrl), '?', 0),'#',0) as pageurl,
           case when `module` = '' then null else `module` end module1,
-          case when subModule = '' then null else subModule end submodule,
+          case when subModule is not null and subModule <> '' then subModule 
+               when submodule is not null and submodule <> '' then submodule 
+               else null end submodule,
           `content` content,
           COALESCE(
             REGEXP_EXTRACT(COALESCE(pageUrl,reqUrl),'(productId|goodsId|seckillId|id|type|orderSn|search)=([\\w%]+)',2),
@@ -315,42 +364,58 @@ def log_processing():
             REGEXP_EXTRACT(content,'\"(channel)\":(\"?)([^,^\}^\"\s]*)(\"?)',3)) as channel,
           SPLIT_INDEX(ipAddress,',',0) ipaddress,
          packageName packagename,
-         userAgent useragent
-        from kafka_table 
+         userAgent useragent,
+         docType doctype,
+         appVersion appversion,
+         COALESCE(platform,'h5') platform
+        from kafka_table
         where COALESCE(pageUrl,`module`,subModule,referer,referrer,reqUrl) is not null) t
         where userid is not null
-        """
-# where (pageUrl is not null or `module` is not null or `subModule` is not null or referer is not null or referrer is not null ) 
-
-
-
-    clickhouse_sql = f"""
-        CREATE TABLE updaterecord(
-          `stime` STRING,
-          `appkey` STRING,
-          `userid` STRING,
-          `token` string,
-          `sessionid` string,
-          `traceid` string,
-          `referer` STRING,
-          `pageurl` STRING,
-          `module1` string,
-          `submodule` string,
-          `content` string,
-          `item` string,
-          `channel` string,
-          `ipaddress` string,
-          `packagename` string,
-          `useragent` string 
-        ) WITH (
-            'connector' = 'clickhouse',
-            'url' = 'clickhouse://10.103.27.163:8123',
-            'username' = 'root',
-            'password' = 'xB4UnYZd',
-            'database-name' = 'markpoint',        /* ClickHouse 数据库名，默认为 default */
-            'table-name' = 'updaterecord'     /* ClickHouse 数据表名 */
-
-        )
+    union all
+        select
+            stime,
+            appkey,
+            userid,
+            token,
+            sessionid,
+            traceid,
+            '' referer,
+            module1 pageurl,
+            module1,
+            submodule,
+            url_unquote(content) content,
+            url_unquote(itemid) itemid,
+            channel,
+            packagename,
+            useragent,
+            ipaddress,
+            SPLIT_INDEX(get_ipinfo(ipaddress), ' ',0) iplocal,
+            SPLIT_INDEX(get_ipinfo(ipaddress), ' ',1) ipoperator,
+            doctype,
+            appversion,
+            platform
+        from
+            (select
+                from_unixtime(stime/1000) stime,
+                `stype` appkey,
+                `userId` userid,
+                `userId` token,
+                `userId` sessionid,
+                `tempUid` traceid,
+                get_key_from_str(`module`,'module') module1,
+                get_key_from_str(`module`,'activityType') submodule,
+                get_key_from_str(`module`,'content') content,
+                '' itemid,
+                channel,
+                `packageName` packagename,
+                concat('app_',`appVersion`) useragent,
+                SPLIT_INDEX(ipAddress,',',0) ipaddress,
+                `docType` doctype,
+                `appVersion` appversion,
+                `platform` platform
+                from kafka_table1
+                where userId is not null and userId <> '' and `module` is not null
+            ) t1
     """
 
     kafka_sink_sql = f"""
@@ -372,12 +437,15 @@ def log_processing():
           `useragent` string,
           `ipaddress` string,
           `iplocal` string,
-          `ipoperator` string
+          `ipoperator` string,
+          `doctype` string,
+          `appversion` string,
+          `platform` string
         ) WITH (
             'connector' = 'kafka',
             'topic' = 'markTopic1',
             'properties.bootstrap.servers' = 'kafka01.tp.base.phd2.jianlc.jlc:9091,kafka02.tp.base.phd2.jianlc.jlc:9091',
-            'properties.group.id' = 'test_3',
+            'properties.group.id' = 'test_4',
             'format' = 'json'
         )
     """
@@ -387,78 +455,25 @@ def log_processing():
 # 'sink.max-retries' = '3',           /* 最大重试次数 */
 # 'sink.ignore-delete' = 'true'       /* 忽略 DELETE 并视 UPDATE 为 INSERT */
 
-    # query_sql = """
-    #   select
-    #     referer,
-    #     pageUrl,
-    #     
-    #   from 
-    #   (select
-    #     appKey,
-    #     case when `module` is null or `module` = '' then null else `module` end module1,
-    #     case when subModule is null or subModule = '' then null else subModule end subModule
-    #   from source_table 
-    #   where 
-    #   ) tmp1
-    # """
-
-
-    sink_ddl = f"""
-      CREATE TABLE print_table(
-        `stime` STRING,
-        `appkey` STRING,
-        `userid` STring,
-        `token` string,
-        `sessionid` string,
-        `traceid` string,
-        `referer` STRING,
-        `pageurl` STRING,
-        `module1` string,
-        `submodule` string,
-        `content` string,
-        `item` string,
-        `channel` string,
-        `ipaddress` string,
-        `packagename` string,
-        `useragent` string 
-        ) WITH (
-          'connector' = 'print'
-        )
-    """
-
-    # 
-    # 
-    # 
-#  
-      
-      
 
     t_env.create_temporary_function("get_token", get_token)
-    t_env.create_temporary_function("get_ipinfo", get_ipinfo) 
+    t_env.create_temporary_function("get_ipinfo", get_ipinfo)
+    t_env.create_temporary_function("get_key_from_str", get_key_from_str)
+    t_env.create_temporary_function("url_unquote", url_unquote)
+ 
+
 
     t_env.execute_sql(source_ddl)
-    # t_env.execute_sql(sink_ddl)
+    t_env.execute_sql(source1_ddl)
     t_env.execute_sql(kafka_sink_sql)
-    
-    
 
-    t_env.sql_query(query_sql) \
-        .insert_into("kafka_sink")
+
+
+    t_env.sql_query(query_sql).insert_into("kafka_sink")
     t_env.execute('to_markpoint1')
 
     # t_result = t_env.execute_sql(query_sql)
     # t_result.print()
-    
-    # source_t = t_env.from_path("source_table")
-    # result = source_t.filter(source_t.appKey == "YSHAppAndroidIOSH5") \
-    #   .window(Slide.over(lit(1).minutes) \
-    #     .every(lit(1).minutes) \
-    #     .on(source_t.user_action_time).alias("w")) \
-    #     .group_by(source_t.token, source_t.appKey, col("w")) \
-    #       .select(source_t.token, source_t.appKey, col("w").start.alias("stime"), source_t.token.count.alias("nums"))
-    
-    # result.execute_insert("sink_table").wait()
-
 
 if __name__ == '__main__':
     log_processing()
