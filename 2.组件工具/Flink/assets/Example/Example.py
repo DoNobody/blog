@@ -179,10 +179,10 @@ class IPCz:
 def get_key_from_str(data, key):
     try:
       if not key:
-          return str(data)
+          return str(data).replace(" ","")
       data_json = json.loads(data)
       if key in data_json:
-          return str(data_json.get(key))
+          return str(data_json.get(key)).replace(" ","")
     except Exception as e:
       raise e
 
@@ -190,7 +190,10 @@ def get_key_from_str(data, key):
 @udf(result_type=DataTypes.STRING())
 def get_ipinfo(ipstr):
     try:
-      ip_address_rangge = IPCz().get_ip_address(ipstr)
+      if ipstr:
+        ip_address_rangge = IPCz().get_ip_address(ipstr)
+      else:
+        ip_address_rangge = ''
       return ip_address_rangge
     except Exception as e:
       raise e
@@ -278,7 +281,7 @@ def log_processing():
             ) WITH (
               'connector' = 'kafka',
               'topic' = 'markTopic',
-              'properties.bootstrap.servers' = 'kafka01.tp.base.phd2.jianlc.jlc:9091,kafka02.tp.base.phd2.jianlc.jlc:9091',
+              'properties.bootstrap.servers' = 'kafka01.tp.base.phd2.jianlc.jlc:9091,kafka02.tp.base.phd2.jianlc.jlc:9091,kafka03.tp.base.phd2.jianlc.jlc:9091',
               'properties.group.id' = 'marktopic_3',
               'format' = 'json'
             )
@@ -308,12 +311,39 @@ def log_processing():
         ) WITH (
             'connector' = 'kafka',
             'topic' = 'apmMobile',
-            'properties.bootstrap.servers' = 'kafka01.tp.base.phd2.jianlc.jlc:9091,kafka02.tp.base.phd2.jianlc.jlc:9091',
+            'properties.bootstrap.servers' = 'kafka01.tp.base.phd2.jianlc.jlc:9091,kafka02.tp.base.phd2.jianlc.jlc:9091,kafka03.tp.base.phd2.jianlc.jlc:9091',
             'properties.group.id' = 'apmmobile_3',
             'format' = 'json'
         )
         """
 
+    source2_ddl = """
+         CREATE TABLE kafka_table2(
+            `appKey` STRING,
+            `stime` BIGINT,
+            `userId` STRING,
+            `clickEvent` STRING,
+            `ipAddress` STRING,
+            `appVersion` STRING,
+            `tempUid` STRING,
+            `tranceId` STRING,
+            `docType` STRING,
+            `isPV` STRING,
+            `userAgent` STRING,
+            `fromPageUrl` STRING,
+            `url` STRING,
+            `content` STRING,
+            `proctime` AS PROCTIME(),
+            `eventTime` AS TO_TIMESTAMP(FROM_UNIXTIME(stime/1000, 'yyyy-MM-dd HH:mm:ss')),
+            WATERMARK FOR eventTime AS eventTime - INTERVAL '5' SECOND
+        ) WITH (
+            'connector' = 'kafka',
+            'topic' = 'apmH5Topic',
+            'properties.bootstrap.servers' = 'kafka01.tp.base.phd2.jianlc.jlc:9091,kafka02.tp.base.phd2.jianlc.jlc:9091,kafka03.tp.base.phd2.jianlc.jlc:9091',
+            'properties.group.id' = 'apmH5Topic_3',
+            'format' = 'json'
+        )
+        """
 # # 'scan.startup.mode' = 'earliest-offset',
 # # 'scan.startup.mode' = 'latest-offset',
 
@@ -416,7 +446,51 @@ def log_processing():
                 from kafka_table1
                 where userId is not null and userId <> '' and `module` is not null
             ) t1
+    union all
+    select 
+        stime,
+        appkey,
+        userid,
+        userid token,
+        userid sessionid,
+        traceid,
+        referer,
+        module1 pageurl,
+        module1,
+        submodule,
+        url_unquote(content) content,
+        url_unquote(itemid) itemid,
+        channel,
+        packagename,
+        useragent,
+        ipaddress,
+        SPLIT_INDEX(get_ipinfo(ipaddress), ' ',0) iplocal,
+        SPLIT_INDEX(get_ipinfo(ipaddress), ' ',1) ipoperator,
+        doctype,
+        appversion,
+        platform
+    from 
+    (select 
+        from_unixtime(stime/1000) stime,
+        `appKey` appkey,
+        COALESCE(REGEXP_EXTRACT(url,'(userId)=([\\w%]+)',2),userId) userid,
+        COALESCE(tranceId,tempUid) traceid,
+        TRIM(SPLIT_INDEX(SPLIT_INDEX(fromPageUrl, '?', 0),'#',0)) as referer,
+        TRIM(SPLIT_INDEX(SPLIT_INDEX(url, '?', 0),'#',0)) as module1,
+        `clickEvent` submodule,
+        `content`,
+        `content` itemid,
+        '' channel,
+        '' packagename,
+        `userAgent` useragent,
+        SPLIT_INDEX(ipAddress,',',0) ipaddress,
+        `docType` doctype,
+        `appVersion` appversion,
+        '' platform
+    from kafka_table2  
+    where userId is not null and userId <> '' and url is not null) t 
     """
+
 
     kafka_sink_sql = f"""
         CREATE TABLE kafka_sink (
@@ -443,8 +517,8 @@ def log_processing():
           `platform` string
         ) WITH (
             'connector' = 'kafka',
-            'topic' = 'markTopic1',
-            'properties.bootstrap.servers' = 'kafka01.tp.base.phd2.jianlc.jlc:9091,kafka02.tp.base.phd2.jianlc.jlc:9091',
+            'topic' = 'markTopicClickhouse',
+            'properties.bootstrap.servers' = 'kafka01.tp.base.phd2.jianlc.jlc:9091,kafka02.tp.base.phd2.jianlc.jlc:9091,kafka03.tp.base.phd2.jianlc.jlc:9091',
             'properties.group.id' = 'test_4',
             'format' = 'json'
         )
@@ -465,6 +539,7 @@ def log_processing():
 
     t_env.execute_sql(source_ddl)
     t_env.execute_sql(source1_ddl)
+    t_env.execute_sql(source2_ddl) 
     t_env.execute_sql(kafka_sink_sql)
 
 

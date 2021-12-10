@@ -8,13 +8,13 @@
 - 数据
 - 业内最佳实践
 - 公司内应用
-  
+
 ## 数据理解
 
 ### What
 
 > 数据(data)是事实或观察的结果，是对客观事物的逻辑归纳，是用于表示客观事物的未经加工的原始素材。
-数据可以是连续的值，比如声音、图像，称为模拟数据。也可以是离散的，如符号、文字，称为数字数据。
+> 数据可以是连续的值，比如声音、图像，称为模拟数据。也可以是离散的，如符号、文字，称为数字数据。
 
 ### Why
 
@@ -34,12 +34,13 @@
 #### 分析师岗位
 
 - 一种类似产品经理
+
   - 商业分析
   - 数据运营
   - 用户研究
   - 策略分析
 
-- 一种偏向数据挖掘  
+- 一种偏向数据挖掘
   - 编程语言基础
   - 算法
   - 数据结构
@@ -50,7 +51,7 @@
 - SQL（数据库）
 - 统计学基础
   - Tableau、Excel
-- Python或者R的基础
+- Python 或者 R 的基础
   - R、Python
 
 #### 举个例子
@@ -66,7 +67,7 @@
 > 对大规模数据进行自动或半自动的分析，以提取过去未知的有价值的潜在信息，例如数据的分组（通过聚类分析）、数据的异常记录（通过异常检测）和数据之间的关系（通过关联式规则挖掘）
 
 - 入门要求：
-  - 熟悉Hadoop生态圈
+  - 熟悉 Hadoop 生态圈
   - 常见的数据挖掘算法
 
 #### 数据中台
@@ -91,12 +92,12 @@
 - 生物信息(Biometrics)
 - 机器处理自动化(Robotic Processes Automation)
 - 文本分析和自然语言处理(Text Analytics and Natural Language Processing)
-- 数字孪生/AI建模(Digital Twin/AI Modeling)
+- 数字孪生/AI 建模(Digital Twin/AI Modeling)
 - 网络防御(Cyber Defense)
 - 合规( Compliance)
 - 知识工作辅助(Knowledge Worker Aid)
 - 内容创作(Content Creation)
-- P2P网络( Peer-to-Peer Networks)
+- P2P 网络( Peer-to-Peer Networks)
 - 情绪识别(Emotion Recognition)
 - 图像识别( Image Recognition)
 
@@ -117,16 +118,4 @@
 
 ## 公司内应用
 
-### 大数据基础设施
-
-![Hadoop集群](./assets/20200709155656.jpg)
-
-### ETL分析流程
-
-![自研ETL配置系统](./assets/20200709155159.jpg)
-![python程序分析平台](./assets/20200709160042.jpg)
-
-### BI系统
-
-![自研数据报表系统](./assets/20200709154903.jpg)
-![开源数据报表系统superset](./assets/20200709155451.jpg)
+###
