@@ -1,15 +1,14 @@
 # dgraph
 
-> [Fast, Distributed Graph DB](https://dgraph.io)
-> [Doc](https://docs.dgraph.io)
+> [Fast, Distributed Graph DB](https://dgraph.io) > [Doc](https://docs.dgraph.io)
 
 ## 简明教程
 
 ## 启动
 
-> 推荐使用docker-compose方式：参考使用官网docker-compose.yml文件
+> 推荐使用 docker-compose 方式：参考使用官网 docker-compose.yml 文件
 
-## graphql默认内省字段
+## graphql 默认内省字段
 
 ```graph
 type __Schema {
@@ -17,7 +16,7 @@ type __Schema {
     queryType : __Type!
     mutationType : __Type
     directives : [__Directive!]!
-} 
+}
 
 type __Type {
     kind : __TypeKind!
@@ -101,21 +100,73 @@ enum __DirectiveLocation {
 # graphql query
 {
   __schema {
-      queryType {
-          name 
-          kind
-          description
-      }
-      mutationType {
+    queryType {
+      name
+      kind
+      description
+      fields {
+        name
+        type {
           name
           kind
-          description
-      }
-      directives {
+        }
+        args {
           name
+          type {
+            name
+            kind
+            ofType {
+              name
+              kind
+            }
+          }
+          defaultValue
           description
-          
+        }
       }
+    }
+    mutationType {
+      name
+      kind
+      description
+      fields {
+        name
+        type {
+          name
+          kind
+        }
+        args {
+          name
+          type {
+            name
+            kind
+            ofType {
+              name
+              kind
+            }
+          }
+          defaultValue
+          description
+        }
+      }
+    }
+    directives {
+      name
+      description
+      args {
+        name
+        type {
+          name
+          kind
+          ofType {
+            name
+            kind
+          }
+        }
+        defaultValue
+        description
+      }
+    }
   }
 }
 ```
