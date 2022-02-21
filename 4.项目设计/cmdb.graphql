@@ -1,0 +1,40 @@
+interface Node {
+  id: ID!
+  name: String @search(by: [fulltext])
+}
+
+type Host implements Node {
+  ip: String @search(by: [fulltext])
+  process: [Process!] @hasInverse(field: hosts)
+}
+
+type Process implements Node {
+  procs: [Int!]!
+  workdir: [String!]
+  files: [String!]
+  hosts: [Host!]
+  service: [Service!] @hasInverse(field: processes)
+  listenservice: [ListenService!] @hasInverse(field: processes)
+}
+
+type ListenService implements Node {
+  processes: [Process!]
+  ports: [Int!]!
+  service: [Service!] @hasInverse(field: listenservice)
+}
+
+enum ServiceCategory {
+  Middleware
+  BizProcess
+}
+
+type Service implements Node {
+  listenservice: [ListenService!]
+  processes: [Process!]
+  stype: ServiceCategory!
+  biz: [Biz!] @hasInverse(field: services)
+}
+
+type Biz implements Node {
+  services: [Service!]
+}

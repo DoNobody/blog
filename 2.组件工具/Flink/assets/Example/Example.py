@@ -1,15 +1,15 @@
 # 使用 StreamTableEnvironment
 from pyflink.table import StreamTableEnvironment, EnvironmentSettings, DataTypes
 from pyflink.table.udf import udf
-import json,re,base64
+import json, re, base64
 from urllib import parse
 import platform
-
 
 # 解析 IP库的代码
 from os.path import abspath, dirname
 import struct
 import socket
+
 
 def ip_to_string(ip):
     """
@@ -17,7 +17,9 @@ def ip_to_string(ip):
     :param ip:
     :return:
     """
-    return str(ip >> 24) + '.' + str((ip >> 16) & 0xff) + '.' + str((ip >> 8) & 0xff) + '.' + str(ip & 0xff)
+    return str(ip >> 24) + '.' + str((ip >> 16) & 0xff) + '.' + str(
+        (ip >> 8) & 0xff) + '.' + str(ip & 0xff)
+
 
 def string_to_ip(s):
     """
@@ -25,8 +27,10 @@ def string_to_ip(s):
     :param s:
     :return:
     """
-    (ip,) = struct.unpack('I', socket.inet_aton(s))
-    return ((ip >> 24) & 0xff) | ((ip & 0xff) << 24) | ((ip >> 8) & 0xff00) | ((ip & 0xff00) << 8)
+    (ip, ) = struct.unpack('I', socket.inet_aton(s))
+    return ((ip >> 24) & 0xff) | ((ip & 0xff) << 24) | ((ip >> 8) & 0xff00) | (
+        (ip & 0xff00) << 8)
+
 
 class IPCz:
     # 数据文件路径
@@ -39,7 +43,8 @@ class IPCz:
         self.__f_db = open(self.__database_file, "rb")
         bs = self.__f_db.read(8)
         (self.__first_index, self.__last_index) = struct.unpack('II', bs)
-        self.__index_count = int((self.__last_index - self.__first_index) / 7 + 1)
+        self.__index_count = int((self.__last_index - self.__first_index) / 7 +
+                                 1)
 
     def get_version(self):
         """
@@ -53,7 +58,7 @@ class IPCz:
         if offset:
             self.__f_db.seek(offset)
         bs = self.__f_db.read(1)
-        (byte,) = struct.unpack('B', bs)
+        (byte, ) = struct.unpack('B', bs)
         if byte == 0x01 or byte == 0x02:
             p = self.__get_long3()
             if p:
@@ -74,12 +79,12 @@ class IPCz:
         """
         self.__f_db.seek(offset + 4)
         bs = self.__f_db.read(1)
-        (byte,) = struct.unpack('B', bs)
+        (byte, ) = struct.unpack('B', bs)
         if byte == 0x01:  # 重定向模式1
             country_offset = self.__get_long3()
             self.__f_db.seek(country_offset)
             bs = self.__f_db.read(1)
-            (b,) = struct.unpack('B', bs)
+            (b, ) = struct.unpack('B', bs)
             if b == 0x02:
                 country_addr = self.__get_offset_string(self.__get_long3())
                 self.__f_db.seek(country_offset + 4)
@@ -102,7 +107,7 @@ class IPCz:
         self.__cur_end_ip_offset = of1 + (of2 << 16)
         self.__f_db.seek(self.__cur_end_ip_offset)
         buf = self.__f_db.read(4)
-        (self.__cur_end_ip,) = struct.unpack("I", buf)
+        (self.__cur_end_ip, ) = struct.unpack("I", buf)
 
     def get_ip_address(self, ip):
         """
@@ -143,7 +148,8 @@ class IPCz:
         if type(ip) == str:
             ip = string_to_ip(ip)
         self.get_ip_address(ip)
-        return ip_to_string(self.__cur_start_ip) + ' - ' + ip_to_string(self.__cur_end_ip)
+        return ip_to_string(self.__cur_start_ip) + ' - ' + ip_to_string(
+            self.__cur_end_ip)
 
     def __get_offset_string(self, offset=0):
         """
@@ -155,11 +161,11 @@ class IPCz:
             self.__f_db.seek(offset)
         bs = b''
         ch = self.__f_db.read(1)
-        (byte,) = struct.unpack('B', ch)
+        (byte, ) = struct.unpack('B', ch)
         while byte != 0:
             bs += ch
             ch = self.__f_db.read(1)
-            (byte,) = struct.unpack('B', ch)
+            (byte, ) = struct.unpack('B', ch)
         return bs.decode('gbk')
 
     def __get_long3(self, offset=0):
@@ -178,45 +184,49 @@ class IPCz:
 @udf(result_type=DataTypes.STRING())
 def get_key_from_str(data, key):
     try:
-      if not key:
-          return str(data).replace(" ","")
-      data_json = json.loads(data)
-      if key in data_json:
-          return str(data_json.get(key)).replace(" ","")
+        if not key:
+            return str(data).replace(" ", "")
+        data_json = json.loads(data)
+        if key in data_json:
+            return str(data_json.get(key)).replace(" ", "")
     except Exception as e:
-      raise e
+        raise e
 
 
 @udf(result_type=DataTypes.STRING())
 def get_ipinfo(ipstr):
     try:
-      if ipstr:
-        ip_address_rangge = IPCz().get_ip_address(ipstr)
-      else:
-        ip_address_rangge = ''
-      return ip_address_rangge
+        if ipstr:
+            ip_address_rangge = IPCz().get_ip_address(ipstr)
+        else:
+            ip_address_rangge = ''
+        return ip_address_rangge
     except Exception as e:
-      raise e
+        raise e
 
 
 @udf(result_type=DataTypes.STRING())
 def get_token(token):
     try:
-      if len(token) > 32 and token.startswith('jlc'):
-        return base64.b64decode(parse.unquote(token)[3:])[::-1][:32].decode()
-      elif len(token) == 28:
-        return token
+        if len(token) > 32 and token.startswith('jlc'):
+            return base64.b64decode(
+                parse.unquote(token)[3:])[::-1][:32].decode()
+        elif len(str(token)) in [28, 11, 8]:
+            return str(token)
+        elif ' ' not in str(token):
+            return str(token)
 
-      tmp = re.findall(r'userId=([\w]{32})',parse.unquote(token))
-      if tmp:
-        return tmp[0]
-      tmp = re.findall(r'token=([\w=]*)',parse.unquote(token))
-      if tmp:
-        tmp_str = tmp[0]
-        if tmp_str.startswith('jlc'):
-          return str(base64.b64decode(tmp_str[3:])[::-1][:32]).decode()
+        tmp = re.findall(r'userId=([\w]{32})', parse.unquote(token))
+        if tmp:
+            return tmp[0]
+        tmp = re.findall(r'token=([\w=]*)', parse.unquote(token))
+        if tmp:
+            tmp_str = tmp[0]
+            if tmp_str.startswith('jlc'):
+                return str(base64.b64decode(tmp_str[3:])[::-1][:32]).decode()
     except Exception as e:
-      pass
+        pass
+
 
 @udf(result_type=DataTypes.STRING())
 def url_unquote(url):
@@ -227,19 +237,26 @@ def url_unquote(url):
 
 
 def log_processing():
-    env_settings = EnvironmentSettings.new_instance().in_streaming_mode().use_blink_planner().build()
+    env_settings = EnvironmentSettings.new_instance().in_streaming_mode(
+    ).use_blink_planner().build()
     t_env = StreamTableEnvironment.create(environment_settings=env_settings)
 
     # specify connector and format jars
     if platform.system() == 'Darwin':
-        t_env.get_config().get_configuration().set_string("pipeline.jars", "file:///Users/liuhongwei/.m2/repository/org/apache/flink/flink-connector-kafka_2.11/1.12.0/flink-connector-kafka_2.11-1.12.0.jar;file:///Users/liuhongwei/.m2/repository/org/apache/kafka/kafka-clients/2.4.1/kafka-clients-2.4.1.jar")
-        t_env.get_config().get_configuration().set_string("parallelism.default", "1")
+        t_env.get_config().get_configuration().set_string(
+            "pipeline.jars",
+            "file:///Users/liuhongwei/.m2/repository/org/apache/flink/flink-connector-kafka_2.11/1.12.0/flink-connector-kafka_2.11-1.12.0.jar;file:///Users/liuhongwei/.m2/repository/org/apache/kafka/kafka-clients/2.4.1/kafka-clients-2.4.1.jar"
+        )
+        t_env.get_config().get_configuration().set_string(
+            "parallelism.default", "1")
     else:
-        t_env.get_config().get_configuration().set_string("pipeline.jars", "file:///server/flink/jars/flink-connector-kafka_2.11-1.12.0.jar;file:///server/flink/jars/json-lib-2.3-jdk15.jar;file:///server/flink/jars/kafka-clients-2.4.1.jar")
-        t_env.get_config().get_configuration().set_string("parallelism.default", "4")
- 
-    
-    
+        t_env.get_config().get_configuration().set_string(
+            "pipeline.jars",
+            "file:///server/flink/jars/flink-connector-kafka_2.11-1.12.0.jar;file:///server/flink/jars/json-lib-2.3-jdk15.jar;file:///server/flink/jars/kafka-clients-2.4.1.jar"
+        )
+        t_env.get_config().get_configuration().set_string(
+            "parallelism.default", "4")
+
     # 处理 markTopic
     source_ddl = """
             CREATE TABLE kafka_table(
@@ -274,7 +291,7 @@ def log_processing():
                 `closeTime` STRING,
                 `currentTime` STRING,
                 `loadTime` STRING,
-                `platform` STRING, 
+                `platform` STRING,
                 `proctime` AS PROCTIME(),
                 `eventTime` AS TO_TIMESTAMP(FROM_UNIXTIME(stime/1000, 'yyyy-MM-dd HH:mm:ss')),
                 WATERMARK FOR eventTime AS eventTime - INTERVAL '5' SECOND
@@ -344,8 +361,8 @@ def log_processing():
             'format' = 'json'
         )
         """
-# # 'scan.startup.mode' = 'earliest-offset',
-# # 'scan.startup.mode' = 'latest-offset',
+    # # 'scan.startup.mode' = 'earliest-offset',
+    # # 'scan.startup.mode' = 'latest-offset',
 
     query_sql = """
         select
@@ -381,14 +398,14 @@ def log_processing():
           SPLIT_INDEX(SPLIT_INDEX(COALESCE(referer,referrer), '?', 0),'#',0) as referer,
           SPLIT_INDEX(SPLIT_INDEX(COALESCE(pageUrl,reqUrl), '?', 0),'#',0) as pageurl,
           case when `module` = '' then null else `module` end module1,
-          case when subModule is not null and subModule <> '' then subModule 
-               when submodule is not null and submodule <> '' then submodule 
+          case when subModule is not null and subModule <> '' then subModule
+               when submodule is not null and submodule <> '' then submodule
                else null end submodule,
           `content` content,
           COALESCE(
             REGEXP_EXTRACT(COALESCE(pageUrl,reqUrl),'(productId|goodsId|seckillId|id|type|orderSn|search)=([\\w%]+)',2),
             REGEXP_EXTRACT(content,'(productId)=([^\"^\}^&^\?^#\s]+)',2),
-            REGEXP_EXTRACT(content,'\"(productId|id|SeckillId|goodsId|categoryId|referer|search|searchText|value|orderSn|logisticsId|orderId|sort|type|url)\":(\"?)([^,^\}^\"\s]+)(\"?)',3),
+            REGEXP_EXTRACT(content,'\"(productId|id|SeckillId|goodsId|categoryId|referer|search|searchText|value|orderSn|logisticsId|orderId|sort|type|url|webUrl)\":(\"?)([^,^\}^\"\s]+)(\"?)',3),
             REPLACE(content,'\n','')) as itemid,
           COALESCE(REGEXP_EXTRACT(COALESCE(pageUrl,reqUrl),'(channel)=([\\w%]+)',2),
             REGEXP_EXTRACT(content,'\"(channel)\":(\"?)([^,^\}^\"\s]*)(\"?)',3)) as channel,
@@ -414,7 +431,7 @@ def log_processing():
             module1,
             submodule,
             url_unquote(content) content,
-            url_unquote(itemid) itemid,
+            COALESCE(REGEXP_EXTRACT(url_unquote(content),'\"(webUrl)\":(\"?)([^,^\}^\"\s]+)(\"?)',3)) as itemid,
             channel,
             packagename,
             useragent,
@@ -447,7 +464,7 @@ def log_processing():
                 where userId is not null and userId <> '' and `module` is not null
             ) t1
     union all
-    select 
+    select
         stime,
         appkey,
         userid,
@@ -469,8 +486,8 @@ def log_processing():
         doctype,
         appversion,
         platform
-    from 
-    (select 
+    from
+    (select
         from_unixtime(stime/1000) stime,
         `appKey` appkey,
         COALESCE(REGEXP_EXTRACT(url,'(userId)=([\\w%]+)',2),userId) userid,
@@ -487,10 +504,9 @@ def log_processing():
         `docType` doctype,
         `appVersion` appversion,
         '' platform
-    from kafka_table2  
-    where userId is not null and userId <> '' and url is not null) t 
+    from kafka_table2
+    where userId is not null and userId <> '' and url is not null) t
     """
-
 
     kafka_sink_sql = f"""
         CREATE TABLE kafka_sink (
@@ -524,31 +540,27 @@ def log_processing():
         )
     """
 
-# 'sink.batch-size' = '1000',         /* batch 大小 */
-# 'sink.flush-interval' = '1000',     /* flush 时间间隔 */
-# 'sink.max-retries' = '3',           /* 最大重试次数 */
-# 'sink.ignore-delete' = 'true'       /* 忽略 DELETE 并视 UPDATE 为 INSERT */
-
+    # 'sink.batch-size' = '1000',         /* batch 大小 */
+    # 'sink.flush-interval' = '1000',     /* flush 时间间隔 */
+    # 'sink.max-retries' = '3',           /* 最大重试次数 */
+    # 'sink.ignore-delete' = 'true'       /* 忽略 DELETE 并视 UPDATE 为 INSERT */
 
     t_env.create_temporary_function("get_token", get_token)
     t_env.create_temporary_function("get_ipinfo", get_ipinfo)
     t_env.create_temporary_function("get_key_from_str", get_key_from_str)
     t_env.create_temporary_function("url_unquote", url_unquote)
- 
-
 
     t_env.execute_sql(source_ddl)
     t_env.execute_sql(source1_ddl)
-    t_env.execute_sql(source2_ddl) 
+    t_env.execute_sql(source2_ddl)
     t_env.execute_sql(kafka_sink_sql)
-
-
 
     t_env.sql_query(query_sql).insert_into("kafka_sink")
     t_env.execute('to_markpoint1')
 
     # t_result = t_env.execute_sql(query_sql)
     # t_result.print()
+
 
 if __name__ == '__main__':
     log_processing()

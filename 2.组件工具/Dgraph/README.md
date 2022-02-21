@@ -170,3 +170,32 @@ enum __DirectiveLocation {
   }
 }
 ```
+
+## 学习步骤
+
+### 定义 schema 结构
+
+### 数据管理
+
+- 插入数据
+
+- 修改数据
+
+> 及联删除
+
+```DQL
+upsert {
+  query {
+    var(func: type(Person)) {
+      Person as uid
+    }
+  }
+  mutation {
+      delete {
+       uid(Person) * * .
+      }
+  }
+}
+```
+
+- 查询数据

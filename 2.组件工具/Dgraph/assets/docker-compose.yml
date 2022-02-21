@@ -16,6 +16,9 @@ services:
       - 6080:6080
     restart: on-failure
     command: dgraph zero --my=zero:5080
+    networks:
+      - dgraph
+
   alpha:
     image: dgraph/dgraph:latest
     volumes:
@@ -23,5 +26,13 @@ services:
     ports:
       - 8080:8080
       - 9080:9080
+      - 7080:7080
     restart: on-failure
-    command: dgraph alpha --my=alpha:7080 --zero=zero:5080 --security "whitelist=172.18.0.1"
+    command: dgraph alpha --my=alpha:7080 --zero=zero:5080 --security whitelist=172.0.0.1:172.253.0.1
+    networks:
+      - dgraph
+
+networks:
+  dgraph:
+    name: dgraph
+    driver: bridge
