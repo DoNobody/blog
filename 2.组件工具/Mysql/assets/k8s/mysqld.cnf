@@ -1,0 +1,10 @@
+[mysqld]
+explicit_defaults_for_timestamp=1
+lower_case_table_names=1
+max_allowed_packet=32M
+net_write_timeout=600
+net_read_timeout=300
+symbolic-links=0
+max_connections=1000 
+innodb_strict_mode = 0
+sql_mode=ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION

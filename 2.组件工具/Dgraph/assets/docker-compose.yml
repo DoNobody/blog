@@ -10,7 +10,7 @@ services:
   zero:
     image: dgraph/dgraph:latest
     volumes:
-      - /Users/work_space/docker_share/dgraph:/dgraph
+      - dgraph-data:/dgraph
     ports:
       - 5080:5080
       - 6080:6080
@@ -22,7 +22,7 @@ services:
   alpha:
     image: dgraph/dgraph:latest
     volumes:
-      - /Users/work_space/docker_share/dgraph:/dgraph
+      - dgraph-data:/dgraph
     ports:
       - 8080:8080
       - 9080:9080
@@ -32,7 +32,19 @@ services:
     networks:
       - dgraph
 
+  ratel:
+    image: dgraph/ratel:latest
+    ports:
+      - 8100:8000
+    restart: on-failure
+    networks:
+      - dgraph
+
 networks:
   dgraph:
     name: dgraph
     driver: bridge
+
+volumes:
+  dgraph-data:
+    name: dgraph-data

@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/Shopify/sarama v1.28.0
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
+	github.com/dgraph-io/ratel v0.0.0-20210528215746-9debcc4717cc // indirect
 	github.com/gin-gonic/gin v1.7.1
 	github.com/go-playground/validator/v10 v10.5.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect

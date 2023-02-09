@@ -33,3 +33,5 @@ SLA（Service-Level Agreemnet）
 * 解决方案和中间件实战能力
 * 容器技术应用和集群化部署能力
 * 海量数据搜索和实时计算能力
+
+[谷歌发布：DEVOPS 投资回报白皮书](https://www.continuousdelivery20.com/blog/devops-how-to-meature-roi-by-google/)

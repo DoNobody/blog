@@ -1,0 +1,25 @@
+version: '2'
+
+services:
+  redis:
+    container_name: blog-redis
+    image: 
+      redis:6.2-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - blog-redis-data:/usr/local/etc/redis
+    # command:
+    #   redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - blog-redis
+    restart: always
+
+networks:
+  blog-redis:
+    name: blog-redis
+    driver: bridge
+
+volumes:
+  blog-redis-data:
+    name: blog-redis-data
