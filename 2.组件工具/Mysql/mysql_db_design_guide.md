@@ -38,7 +38,7 @@ MySQL数据库与 Oracle、 SQL Server 等数据库相比，有其内核上的�
 
 1. 【建议】表中的自增列（`auto_increment`属性），推荐使用`bigint`类型。因为无符号`int`存储范围为`-2147483648~2147483647`（大约21亿左右），溢出后会导致报错。
 2. 【建议】业务中选择性很少的状态`status`、类型`type`等字段推荐使用`tinytint`或者`smallint`类型节省存储空间。
-3. 【建议】业务中IP地址字段推荐使用`int`类型，不推荐用`char(15)`。因为`int`只占4字节，可以用如下函数相互转换，而`char(15)`占用至少15字节。一旦表数据行数到了1亿，那么要多用1.1G存储空间。 SQL：`select inet_aton('192.168.2.12'); select inet_ntoa(3232236044);` PHP: `ip2long(‘192.168.2.12’); long2ip(3530427185);`
+3. 【建议】业务中IP地址字段推荐使用`int`类型，不推荐用`char(15)`。因为`int`只占4字节，可以用如下函数相互转换，而`char(15)`占用至少15字节。一旦表数据行数到了1亿，那么要多用1.1G存储空间。 SQL：`select inet_aton('192.168.2.12'); select inet_ntoa(3232236044);` PHP: `ip2long('192.168.2.12'); long2ip(3530427185);`
 4. 【建议】不推荐使用`enum`，`set`。 因为它们浪费空间，且枚举值写死了，变更不方便。推荐使用`tinyint`或`smallint`。
 5. 【建议】不推荐使用`blob`，`text`等类型。它们都比较浪费硬盘和内存空间。在加载表数据时，会读取大字段到内存里从而浪费内存空间，影响系统性能。建议和PM、RD沟通，是否真的需要这么大字段。Innodb中当一行记录超过8098字节时，会将该记录中选取最长的一个字段将其768字节放在原始page里，该字段余下内容放在`overflow-page`里。不幸的是在`compact`行格式下，原始`page`和`overflow-page`都会加载。
 6. 【建议】存储金钱的字段，建议用`int`，程序端乘以100和除以100进行存取。因为`int`占用4字节，而`double`占用8字节，空间浪费。
@@ -97,19 +97,19 @@ MySQL数据库与 Oracle、 SQL Server 等数据库相比，有其内核上的�
 ```sql
 CREATE TABLE user (
   `id` bigint(11) NOT NULL AUTO_INCREMENT,
-  `user_id` bigint(11) NOT NULL COMMENT ‘用户id’
+  `user_id` bigint(11) NOT NULL COMMENT '用户id',
   `username` varchar(45) NOT NULL COMMENT '真实姓名',
-  `email` varchar(30) NOT NULL COMMENT ‘用户邮箱’,
+  `email` varchar(30) NOT NULL COMMENT '用户邮箱',
   `nickname` varchar(45) NOT NULL COMMENT '昵称',
   `avatar` int(11) NOT NULL COMMENT '头像',
   `birthday` date NOT NULL COMMENT '生日',
   `sex` tinyint(4) DEFAULT '0' COMMENT '性别',
   `short_introduce` varchar(150) DEFAULT NULL COMMENT '一句话介绍自己，最多50个汉字',
   `user_resume` varchar(300) NOT NULL COMMENT '用户提交的简历存放地址',
-  `user_register_ip` int NOT NULL COMMENT ‘用户注册时的源ip’,
-  `create_time` timestamp NOT NULL COMMENT ‘用户记录创建的时间’,
-  `update_time` timestamp NOT NULL COMMENT ‘用户资料修改的时间’,
-  `user_review_status` tinyint NOT NULL COMMENT ‘用户资料审核状态，1为通过，2为审核中，3为未通过，4为还未提交审核’,
+  `user_register_ip` int NOT NULL COMMENT '用户注册时的源ip',
+  `create_time` timestamp NOT NULL COMMENT '用户记录创建的时间',
+  `update_time` timestamp NOT NULL COMMENT '用户资料修改的时间',
+  `user_review_status` tinyint NOT NULL COMMENT '用户资料审核状态，1为通过，2为审核中，3为未通过，4为还未提交审核',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_user_id` (`user_id`),
   KEY `idx_username`(`username`),

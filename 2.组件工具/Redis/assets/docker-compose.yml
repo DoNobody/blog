@@ -1,7 +1,7 @@
 version: '2'
 
 services:
-  redis:
+  blog-redis:
     container_name: blog-redis
     image: 
       redis:6.2-alpine
