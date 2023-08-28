@@ -34,7 +34,7 @@ spec:
       dnsPolicy: Default
       volumes:
       - name: workdir
-        emptyDir: {} 
+        emptyDir: {}
 
 ---
 apiVersion: v1

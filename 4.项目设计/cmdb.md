@@ -181,8 +181,8 @@ interface Node {
 }
 
 type Biz implements Node {
-  set: [Set!] @hasInverse(field: biz) 
-  module: [Module!] @hasInverse(field: biz) 
+  set: [Set!] @hasInverse(field: biz)
+  module: [Module!] @hasInverse(field: biz)
 }
 
 type Set implements Node {
@@ -195,14 +195,14 @@ type Env implements Node {
   host: [Host!] @hasInverse(field: env)
   set: [Set!] @hasInverse(field: env)
   build: [Build!] @hasInverse(field: env)
-} 
+}
 
 type Module implements Node {
   buildDeps:[Module!]
   deployDeps:[Module!]
   code: [Code!] @hasInverse(field: module)
   biz: Biz!
-  set: Set 
+  set: Set
 }
 
 type Code implements Node {
@@ -231,8 +231,8 @@ type Host implements Node {
 type Build implements Node {
   code:Code!
   branch: String!
-  env: Env! 
-  package: [Package!] 
+  env: Env!
+  package: [Package!]
 }
 
 type Deploy implements Node {
@@ -254,7 +254,7 @@ type Process implements Node {
 
 enum NetProtocol {
   TCP
-  UDP 
+  UDP
 }
 
 type ListenService implements Node {
@@ -434,12 +434,12 @@ query{
 
 ## 基于nacos构建 cmdb
 
-*协议定义*  
-tenant[namespace]:devops  
-group:class: 类型字段  
+*协议定义*
+tenant[namespace]:devops
+group:class: 类型字段
 dataId: 字段title
 tags:更加配置参数，进行标记及分组。
-content[json|txt]:具体协议内容  
+content[json|txt]:具体协议内容
 
 关系[tag]：通过数据间的tag进行关联。
 页面情况:

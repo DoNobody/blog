@@ -7,7 +7,7 @@
 
 这是一个`浏览器` 的安全策略，所以可以在chrome中进行配置。
 
-在Chrome浏览器中输入：`chrome://net-internals/#hsts`,就可进行配置。  
+在Chrome浏览器中输入：`chrome://net-internals/#hsts`,就可进行配置。
 
 >**删除校验**
 > 1、`Query HSTS/PKP domain：` 中 搜索要删除的网站：www.baidu.com

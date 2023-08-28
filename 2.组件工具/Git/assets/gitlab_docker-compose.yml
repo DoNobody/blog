@@ -21,4 +21,4 @@ services:
 volumes:
   gitlab-data:
   gitlab-config:
-  gitlab-log: 
+  gitlab-log:

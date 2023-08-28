@@ -6,9 +6,9 @@ services:
   mongo:
     image: mongo
     restart: always
-    volumes: 
+    volumes:
       - /Users/work_space/docker_share/mongodb:/data/db
-    ports: 
+    ports:
       - 27017:27017
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
@@ -19,7 +19,7 @@ services:
     restart: always
     ports:
       - 8081:8081
-    links: 
+    links:
       - mongo
     environment:
       ME_CONFIG_MONGODB_ENABLE_ADMIN: "false"

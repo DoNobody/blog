@@ -11,7 +11,7 @@ kubectl.exe get ns
 kubectl.exe get ns kuboard -o json > kuboard-delete.json
 # 编辑删除 spec.finalizers 下的配置
 vim kuboard-delete.json
-# 单独启动 k8s proxy 8081 
+# 单独启动 k8s proxy 8081
 kubectl.exe proxy --port=8081
 
 # 使用 修改后的配置文件

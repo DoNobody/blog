@@ -1,15 +1,14 @@
-version: '2'
+version: "2"
 
 services:
   blog-redis:
     container_name: blog-redis
-    image: 
-      redis:6.2-alpine
+    image: redis:6.2-alpine
     ports:
       - 6379:6379
     volumes:
       - blog-redis-data:/var/lib/redis
-    command: 'redis-server --save 20 1 --loglevel warning --requirepass root'
+    command: "redis-server --save 20 1 --loglevel warning --requirepass root"
     networks:
       - blog-redis
     restart: always

@@ -30,7 +30,7 @@ metadata:
   name: mysql-claim
 spec:
   accessModes:
-    - ReadWriteOnce  
+    - ReadWriteOnce
   resources:
     requests:
       storage: 2Gi

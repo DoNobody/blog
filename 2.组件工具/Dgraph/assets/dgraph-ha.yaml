@@ -360,7 +360,6 @@ spec:
             limits:
               cpu: "0.5"
               memory: "1Gi"
-              
       terminationGracePeriodSeconds: 600
       volumes:
         - name: datadir
@@ -401,7 +400,7 @@ spec:
                   number: 8000
             path: /
             pathType: Prefix
---- 
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

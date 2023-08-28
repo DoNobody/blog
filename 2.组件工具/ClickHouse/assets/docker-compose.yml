@@ -10,8 +10,8 @@ services:
     volumes:
       - /d/workspace/docker_share/clickhouse/:/var/lib/clickhouse/
     environment:
-      - CLICKHOUSE_DB=devops 
-      - CLICKHOUSE_USER=devops 
+      - CLICKHOUSE_DB=devops
+      - CLICKHOUSE_USER=devops
       - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
       - CLICKHOUSE_PASSWORD=devops123
     network_mode: bridge

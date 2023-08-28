@@ -2,7 +2,7 @@
 
 ## netsh window下进行端口转发
 
-```shell 
+```shell
 # 查看已有有的端口转发
 netsh interface portproxy show all
 
