@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-shrink: 0;
+            height: 100px;
+            background-color: red;
+        }
+
+        .tab {
+            display: flex;
+            flex-shrink: 0;
+            height: 100px;
+            background-color: aqua;
+            overflow-x: scroll;
+        }
+
+        .tab .list {
+            display: flex;
+            align-items: center;
+            align-items: flex-end;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-shrink: 0;
+            width: 100px;
+            height: 50px;
+            background-color: yellow;
+            margin-left: 10px;
+            word-break: break-all;
+            align-items: center;
+        }
+
+        .tab-item:first-child {
+            margin-left: 0;
+        }
+
+        .tab-item:nth-child(odd) {
+            background-color: green;
+        }
+
+        .body {
+            display: flex;
+            flex: auto;
+            background-color: black;
+            overflow: hidden;
+        }
+
+        .nav {
+            flex-shrink: 0;
+            width: 300px;
+            background-color: azure;
+            overflow-y: auto;
+        }
+
+        .nav-item .i,
+        .nav-item .b {
+            height: 50px;
+            background-color: blue;
+            margin-bottom: 10px;
+        }
+
+        .l {
+            transition: height 300ms;
+            overflow: hidden;
+        }
+
+        .content {
+            flex: auto;
+            background-color: pink;
+            margin-left: 10px;
+            overflow: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div>left</div>
+        <div>c</div>
+        <div>right</div>
+    </header>
+    <div class="tab">
+        <div class="list">
+            <div class="tab-item">tab1</div>
+            <div class="tab-item">tab1</div>
+            <div class="tab-item">tab1</div>
+            <div class="tab-item">tab1</div>
+            <div class="tab-item">tab1</div>
+            <div class="tab-item">tab1</div>
+            <div class="tab-item">tab1</div>
+            <div class="tab-item">tab1</div>
+            <div class="tab-item">tab1</div>
+            <div class="tab-item">tab1</div>
+            <div class="tab-item">tab1</div>
+            <div class="tab-item">tab1</div>
+            <div class="tab-item">tab1</div>
+            <div class="tab-item">tab1</div>
+            <div class="tab-item">tab1</div>
+            <div class="tab-item">tab1</div>
+        </div>
+
+    </div>
+    <div class="body">
+        <nav class="nav">
+            <div>
+                <div class="nav-item">
+                    <div class="b" onclick="navShow()">0</div>
+                    <div class="l" style="height: 0;">
+                        <div class="i">1</div>
+                        <div class="i">2</div>
+                        <div class="i">3</div>
+                    </div>
+                </div>
+            </div>
+
+        </nav>
+        <div class="content">
+            <div style="width: 2000px; height: 2000px;"></div>
+        </div>
+    </div>
+    <script>
+        function navShow() {
+            const d = document.querySelector('.l').style.height
+            if (d === '0px') {
+                document.querySelector('.l').style.height = '180px'
+            } else {
+                document.querySelector('.l').style.height = '0px'
+            }
+        }
+    </script>
+</body>
+
+</html>

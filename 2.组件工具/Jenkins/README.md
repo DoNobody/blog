@@ -36,7 +36,7 @@ pipeline {
 }
 ```
 
-## 一段可以并行运行的pipeline脚本
+## 一段可以并行运行的 pipeline 脚本
 
 ```java
 // 定义一个任务的构建函数，调用方需要等待任务完成
@@ -150,3 +150,7 @@ pipeline {
 # 命令行前添加环境变量
 BUILD_ID=DONTKILLME
 ```
+
+## Jekins CI/CD 简要流程图
+
+![Jenkins CI/CD图](./assets/jenkins_cicd.png)

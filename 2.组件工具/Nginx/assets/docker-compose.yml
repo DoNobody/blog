@@ -4,5 +4,15 @@ services:
     restart: always
     image: nginx
     container_name: nginx
+    volumes:
+      - ./local_proxy.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./pki/:/etc/nginx/pki:ro
     ports:
-      - 80:80
+      - 8888:8888
+    networks:
+      - nginx
+
+networks:
+  nginx:
+    name: nginx
+    driver: bridge

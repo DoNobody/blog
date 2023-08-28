@@ -9,7 +9,7 @@
 
 在Chrome浏览器中输入：`chrome://net-internals/#hsts`,就可进行配置。
 
-**删除校验**
+>**删除校验**
 > 1、`Query HSTS/PKP domain：` 中 搜索要删除的网站：www.baidu.com
 
 ```bash
@@ -35,7 +35,7 @@ dynamic_sts_expiry: 1593609586.545943
 
 [Certificate and Public Key Pinning](https://owasp.org/www-community/controls/Certificate_and_Public_Key_Pinning)
 
-**可以参考的工具**
+>可以参考的工具
 
 ```URL
 https://github.com/datatheorem/TrustKit-Android
