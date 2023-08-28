@@ -1,3 +1,4 @@
+[首页](/)
 # Mermaid
 
 > MarkDown 流程图

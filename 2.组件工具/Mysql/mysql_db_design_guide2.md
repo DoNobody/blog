@@ -1,3 +1,4 @@
+[首页](/)
 # MySQL数据库设计规范2
 
 > [蓝鲸开发](https://bk.tencent.com/docs/document/7.0/250/46215)
