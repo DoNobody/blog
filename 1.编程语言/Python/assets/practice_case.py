@@ -1,5 +1,5 @@
 # 一些练习思考的case
-import os
+import os,sys
 import dis
 
 # python frame
@@ -23,9 +23,8 @@ def f3():
     op(frame.f_code.co_name)
 
 f3()
-os._exit(0)
-
-# Type Hint
+# 保存每一次的测试代码，新代码提前退出，保证后面代码不执行
+sys.exit(0)
 
 from typing import Optional, Any, NoReturn, Callable, Literal
 
