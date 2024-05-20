@@ -1,0 +1,47 @@
+version: '3'
+name: blog-volumes
+services:
+  test:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM scratch
+    command: fake
+    volumes:
+      - redis-data:/redis
+      - mysql-data:/mysql
+      - clickhouse-data:/clickhouse
+      - nginx-html:/nginx
+
+volumes:
+  redis-data:
+    name: redis-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind   # 文件类型，必需
+      device: /d/workspace/docker_share/redis  # 绝对路径
+
+  mysql-data:
+    name: mysql-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind   # 文件类型，必需
+      device: /d/workspace/docker_share/mysql  # 绝对路径
+
+  clickhouse-data:
+    name: clickhouse-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind   # 文件类型，必需
+      device: /d/workspace/docker_share/clickhouse  # 绝对路径
+
+  nginx-html:
+    name: nginx-html
+    driver: local
+    driver_opts:
+      type: none
+      o: bind   # 文件类型，必需
+      device: /d/workspace/docker_share/nginx  # 绝对路径
