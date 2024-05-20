@@ -1,14 +1,15 @@
 # Mermaid
 
 > MarkDown 流程图
-
-## Basic Pie Chart
+<details>
+<summary>Basic Pie Chart </summary>
 
 ```text
 pie title NETFLIX
          "Time spent looking for movie" : 90
          "Time spent watching it" : 10
 ```
+</details>
 
 ```mermaid
 pie title NETFLIX

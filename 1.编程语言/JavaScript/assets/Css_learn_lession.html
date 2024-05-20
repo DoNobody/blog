@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Mozilla 宣传主页</title>
+  <link href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700" rel="stylesheet">
+  <link href="Css_learn_lession.css" rel="stylesheet">
+</head>
+
+<body>
+  <header>
+    <h1>Mozilla</h1>
+    <!-- 插入 <img> 元素，链接至较小的 Firefox 标志。 -->
+    <img title="firefox" src="images/firefox-logo.png" alt="Firefox logo">
+
+  </header>
+
+  <main>
+    <article>
+      <!-- 插入来自 Bilibili 的 <iframe> 元素 -->
+      <iframe src="https://player.bilibili.com/player.html?aid=3303261&bvid=BV1rs411d7hC&cid=5221342&page=2"
+        width="400px" height="225px" scrolling="no" frameborder="no" framespacing="0" allowfullscreen="true"
+        autoplay="true" muted="true">
+      </iframe>
+
+      <h2>自由网络 尽情驰骋</h2>
+
+      <p>Mozilla 是一个全球社区，这里聚集着来自五湖四海的 技术人员、思考者、建造者。我们致力于让 Internet
+        保持活力，保持畅通，人人皆可贡献，人人皆可创造。我们坚信：开放平台的协作对于人的发展至关重要，也决定着我们共同的未来。</p>
+
+      <p>更多精彩信息，敬请点击下方图片。<a href="https://www.flickr.com/photos/mathiasappel/21675551065/" target="_blank">小熊猫照片</a>由
+        Mathias Appel 拍摄
+      </p>
+    </article>
+
+    <div class="further-info">
+      <a href="https://www.mozilla.org/zh-CN/firefox/new/">
+        <img srcset="images/firefox-logo.png 120w,
+                       images/firefox-logo.png 400w" sizes="(max-width: 500px) 120px,
+                      400px" src="images/firefox-logo400.png" alt="下载 Firefox">
+      </a>
+      <a href="https://www.mozilla.org/">
+        <img srcset="images/mozilla-dinosaur.png 120w,
+                       images/mozilla-dinosaur.png 400w" sizes="(max-width: 500px) 120px,
+                      400px" src="images/mozilla-dinosaur400.png" alt="Mozilla 更多信息">
+      </a>
+      <a href="https://addons.mozilla.org/zh-CN/firefox/">
+        <img srcset="images/firefox-addons.jpg 120w,
+                       images/firefox-addons.jpg 400w" sizes="(max-width: 500px) 120px,
+                      400px" src="images/firefox-addons400.jpg" alt="使用扩展使 Firefox 更加个性化">
+      </a>
+      <a href="https://developer.mozilla.org/zh-CN/">
+        <img src="images/mdn.svg" alt="访问 MDN 学习 Web 开发">
+      </a>
+      <div class="clearfix"></div>
+    </div>
+
+    <div class="red-panda">
+      <picture>
+        <source media="(max-width: 600px)" srcset="images/red-panda-portrait-small.jpg">
+        <img src="images/red-panda.jpg" alt="一只小熊猫">
+      </picture>
+    </div>
+    <div class="zoo">
+      <table>
+        <caption>
+          动物园里有什么
+        </caption>
+        <colgroup>
+          <col />
+          <col style="color: yellow !important" span="4" />
+        </colgroup>
+        <thead>
+          <th colspan="2">Animals</th>
+        </thead>
+        <tbody>
+          <tr>
+            <th colspan="2">Hippopotamus</th>
+          </tr>
+          <tr>
+            <th rowspan="2">Horse</th>
+            <td>Mare</td>
+          </tr>
+          <tr>
+            <td>Stallion</td>
+          </tr>
+          <tr>
+            <th colspan="2">Crocodile</th>
+          </tr>
+          <tr>
+            <th rowspan="2">Chicken</th>
+            <td>Hen</td>
+          </tr>
+          <tr>
+            <td>Rooster</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2">有什么？</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="table2">
+      <table>
+        <caption>Items Sold August 2016</caption>
+        <thead>
+          <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <th colspan="3" id="clothes">Clothes</th>
+            <th colspan="2" id="accessories">Accessories</th>
+          </tr>
+          <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <th id="trousers">Trousers</th>
+            <th id="skirts">Skirts</th>
+            <th id="dresses">Dresses</th>
+            <th id="bracelets">Bracelets</th>
+            <th id="rings">Rings</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th rowspan="3" id="belgium">Belgium</th>
+            <th id="antwerp">Antwerp</th>
+            <td headers="clothes trousers belgium antwerp">56</td>
+            <td headers="clothes skirts belgium antwerp">22</td>
+            <td headers="clothes dresses belgium antwerp">43</td>
+            <td headers="accessories bracelets belgium antwerp">72</td>
+            <td headers="accessories rings belgium antwerp">23</td>
+          </tr>
+          <tr>
+            <th id="gent">Gent</th>
+            <td headers="clothes trousers belgium gent">46</td>
+            <td headers="clothes skirts belgium gent">18</td>
+            <td headers="clothes dresses belgium gent">50</td>
+            <td headers="accessories bracelets belgium gent">61</td>
+            <td headers="accessories rings belgium gent">15</td>
+          </tr>
+          <tr>
+            <th id="brussels">Brussels</th>
+            <td headers="clothes trousers belgium brussels">51</td>
+            <td headers="clothes skirts belgium brussels">27</td>
+            <td headers="clothes dresses belgium brussels">38</td>
+            <td headers="accessories bracelets belgium brussels">69</td>
+            <td headers="accessories rings belgium brussels">28</td>
+          </tr>
+          <tr>
+            <th rowspan="2" id="netherlands">The Netherlands</th>
+            <th id="amsterdam">Amsterdam</th>
+            <td headers="clothes trousers netherlands amsterdam">89</td>
+            <td headers="clothes skirts netherlands amsterdam">34</td>
+            <td headers="clothes dresses netherlands amsterdam">69</td>
+            <td headers="accessories bracelets netherlands amsterdam">85</td>
+            <td headers="accessories rings netherlands amsterdam">38</td>
+          </tr>
+          <tr>
+            <th id="utrecht">Utrecht</th>
+            <td headers="clothes trousers netherlands utrecht">80</td>
+            <td headers="clothes skirts netherlands utrecht">12</td>
+            <td headers="clothes dresses netherlands utrecht">43</td>
+            <td headers="accessories bracelets netherlands utrecht">36</td>
+            <td headers="accessories rings netherlands utrecht">19</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <section class="card">
+      <header>
+        <h2>Chris Mills</h2>
+      </header>
+      <article>
+        <img src="images/chris.jpg" alt="A picture of Chris - a man with glasses, a beard, and a silly wooly hat">
+        <p>50 My Street<br>
+           The Town<br>
+           Gray Peach<br>
+           UK<br>
+           ZO50 1MU<br>
+          <strong>Tel</strong>: 01234 567 890<br>
+          <strong>Mail</strong>: chris@nothere.com</p>
+      </article>
+      <footer>
+        <p>Editing, writing, and web development services</p>
+      </footer>
+    </section>
+  </main>
+</body>
+
+</html>

@@ -27,6 +27,9 @@ encoding = utf-8
     quotepath = false
     # status引用路径不再是八进制（反过来说就是允许显示中文了）
 ```
+- 终端 中git 命令出现中文乱码的另外一个原因
+
+> 终端编码和git获取不一致，使用 `chcp.com 65001` # 这是shell的字符集
 
 ### git submodule git 的子项目管理
 

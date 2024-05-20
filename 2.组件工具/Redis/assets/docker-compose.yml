@@ -7,7 +7,7 @@ services:
     ports:
       - 6379:6379
     volumes:
-      - blog-redis-data:/var/lib/redis
+      - redis-data:/data/
     command: "redis-server --save 20 1 --loglevel warning --requirepass root"
     networks:
       - blog-redis
@@ -19,5 +19,5 @@ networks:
     driver: bridge
 
 volumes:
-  blog-redis-data:
-    name: blog-redis-data
+  redis-data:
+    external: true
