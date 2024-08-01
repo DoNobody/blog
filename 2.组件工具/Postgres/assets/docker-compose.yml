@@ -14,5 +14,7 @@ services:
   adminer:
     image: adminer
     restart: always
+    links:
+      - postgres
     ports:
       - 5433:8080
